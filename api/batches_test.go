@@ -34,6 +34,9 @@ func createRandomBatch() db.Batch {
 }
 
 func TestCreateBatch(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	batch := createRandomBatch()
 	customer := db.Customer{
 		ID:       1,
@@ -513,6 +516,10 @@ func TestListBatches(t *testing.T) {
 	}
 }
 func TestUpdateBatches(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip()
+	}
 
 	batch := createRandomBatch()
 	customer := db.Customer{

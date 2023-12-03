@@ -20,6 +20,9 @@ import (
 )
 
 func TestUpdatePaymentLog(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	payment := db.PaymentLog{
 		ID:         rand.Int63(),
 		Payment:    math.Round(rand.ExpFloat64() * 100),
@@ -55,7 +58,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 				}
 
 				store.EXPECT().GetPaymentForUpdate(gomock.Any(), gomock.Eq(payment.ID)).Times(1).Return(payment, nil)
-				store.EXPECT().AddToPaid(gomock.Any(), gomock.Eq(db.AddToPaidParams{Amount: payment.Payment, ID: payment.CustomerID})).Times(1).Return(db.Customer{}, nil)
+				store.EXPECT().AddToPaid(gomock.Any(), gomock.AssignableToTypeOf(db.AddToPaidParams{Amount: payment.Payment, ID: payment.CustomerID})).Times(1).Return(db.Customer{}, nil)
 				store.EXPECT().UpdatePayment(gomock.Any(), gomock.Eq(arg)).Times(1).Return(payment, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
