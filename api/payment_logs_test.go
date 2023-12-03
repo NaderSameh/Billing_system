@@ -41,7 +41,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -50,7 +50,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 				arg := db.UpdatePaymentParams{
 					ID:               payment.ID,
 					ConfirmationDate: sql.NullTime{Time: time.Now().Round(time.Second), Valid: true},
-					DueDate:          sql.NullTime{Time: payment.DueDate, Valid: true},
+					DueDate:          sql.NullTime{Time: payment.DueDate.Round(time.Second), Valid: true},
 					Confirmed:        true,
 				}
 
@@ -68,7 +68,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				// "confirmed": true,
@@ -86,7 +86,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			// PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -103,7 +103,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": false,
@@ -111,7 +111,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.UpdatePaymentParams{
 					ID:        payment.ID,
-					DueDate:   sql.NullTime{Time: payment.DueDate, Valid: true},
+					DueDate:   sql.NullTime{Time: payment.DueDate.Round(time.Second), Valid: true},
 					Confirmed: false,
 				}
 				store.EXPECT().GetPaymentForUpdate(gomock.Any(), gomock.Eq(payment.ID)).Times(1).Return(payment, nil)
@@ -126,7 +126,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -134,7 +134,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.UpdatePaymentParams{
 					ID:               payment.ID,
-					DueDate:          sql.NullTime{Time: payment.DueDate, Valid: true},
+					DueDate:          sql.NullTime{Time: payment.DueDate.Round(time.Second), Valid: true},
 					ConfirmationDate: sql.NullTime{Time: time.Now().Round(time.Second), Valid: true},
 					Confirmed:        true,
 				}
@@ -152,7 +152,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -160,7 +160,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.UpdatePaymentParams{
 					ID:        payment.ID,
-					DueDate:   sql.NullTime{Time: payment.DueDate, Valid: true},
+					DueDate:   sql.NullTime{Time: payment.DueDate.Round(time.Second), Valid: true},
 					Confirmed: payment.Confirmed,
 				}
 				store.EXPECT().GetPaymentForUpdate(gomock.Any(), gomock.Eq(payment.ID)).Times(1).Return(payment, sql.ErrNoRows)
@@ -176,7 +176,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -184,7 +184,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.UpdatePaymentParams{
 					ID:        payment.ID,
-					DueDate:   sql.NullTime{Time: payment.DueDate, Valid: true},
+					DueDate:   sql.NullTime{Time: payment.DueDate.Round(time.Second), Valid: true},
 					Confirmed: payment.Confirmed,
 				}
 				store.EXPECT().GetPaymentForUpdate(gomock.Any(), gomock.Eq(payment.ID)).Times(1).Return(payment, sql.ErrConnDone)
@@ -199,7 +199,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -218,7 +218,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 			PaymentID: payment.ID,
 			body: gin.H{
 				"due_date": gin.H{
-					"time":  payment.DueDate,
+					"time":  payment.DueDate.Round(time.Second),
 					"valid": true,
 				},
 				"confirmed": true,
@@ -227,7 +227,7 @@ func TestUpdatePaymentLog(t *testing.T) {
 				arg := db.UpdatePaymentParams{
 					ID:               payment.ID,
 					ConfirmationDate: sql.NullTime{Time: time.Now().Round(time.Second), Valid: true},
-					DueDate:          sql.NullTime{Time: payment.DueDate, Valid: true},
+					DueDate:          sql.NullTime{Time: payment.DueDate.Round(time.Second), Valid: true},
 					Confirmed:        true,
 				}
 				store.EXPECT().GetPaymentForUpdate(gomock.Any(), gomock.Eq(payment.ID)).Times(1).Return(payment, nil)
