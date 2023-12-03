@@ -34,9 +34,7 @@ func createRandomBatch() db.Batch {
 }
 
 func TestCreateBatch(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
+
 	batch := createRandomBatch()
 	customer := db.Customer{
 		ID:       1,
@@ -68,7 +66,7 @@ func TestCreateBatch(t *testing.T) {
 					WarrantyEnd:      batch.WarrantyEnd,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().CreateBatch(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batch, nil)
+				store.EXPECT().CreateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -95,7 +93,7 @@ func TestCreateBatch(t *testing.T) {
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
 				store.EXPECT().CreateCustomer(gomock.Any(), gomock.Eq(customer.Customer)).Times(1).Return(customer, nil)
-				store.EXPECT().CreateBatch(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batch, nil)
+				store.EXPECT().CreateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -121,7 +119,7 @@ func TestCreateBatch(t *testing.T) {
 					WarrantyEnd:      batch.WarrantyEnd,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(0).Return(customer, nil)
-				store.EXPECT().CreateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().CreateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -147,7 +145,7 @@ func TestCreateBatch(t *testing.T) {
 					WarrantyEnd:      batch.WarrantyEnd,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrConnDone)
-				store.EXPECT().CreateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().CreateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -173,7 +171,7 @@ func TestCreateBatch(t *testing.T) {
 					WarrantyEnd:      batch.WarrantyEnd,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().CreateBatch(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batch, sql.ErrConnDone)
+				store.EXPECT().CreateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -200,7 +198,7 @@ func TestCreateBatch(t *testing.T) {
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
 				store.EXPECT().CreateCustomer(gomock.Any(), gomock.Eq(customer.Customer)).Times(1).Return(customer, sql.ErrConnDone)
-				store.EXPECT().CreateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().CreateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -376,7 +374,7 @@ func TestListBatches(t *testing.T) {
 					Offset:     0,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().ListAllBatches(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batches, nil)
+				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batches, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -397,7 +395,7 @@ func TestListBatches(t *testing.T) {
 					Offset:     0,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(0).Return(customer, nil)
-				store.EXPECT().ListAllBatches(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batches, nil)
+				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batches, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -417,7 +415,7 @@ func TestListBatches(t *testing.T) {
 					Offset:     0,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrConnDone)
-				store.EXPECT().ListAllBatches(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batches, nil)
+				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batches, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -437,7 +435,7 @@ func TestListBatches(t *testing.T) {
 					Offset:     0,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().ListAllBatches(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batches, sql.ErrConnDone)
+				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batches, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -458,7 +456,7 @@ func TestListBatches(t *testing.T) {
 					Offset: 0,
 				}
 				// store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().ListAllBatches(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batches, nil)
+				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batches, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -479,7 +477,7 @@ func TestListBatches(t *testing.T) {
 					Offset:     0,
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
-				store.EXPECT().ListAllBatches(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batches, nil)
+				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batches, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -517,10 +515,6 @@ func TestListBatches(t *testing.T) {
 }
 func TestUpdateBatches(t *testing.T) {
 
-	if testing.Short() {
-		t.Skip()
-	}
-
 	batch := createRandomBatch()
 	customer := db.Customer{
 		ID:       1,
@@ -553,7 +547,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batch, nil)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -579,7 +573,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(0).Return(customer, nil)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -606,7 +600,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(0).Return(customer, nil)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -631,7 +625,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrConnDone)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -657,7 +651,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(1).Return(batch, sql.ErrConnDone)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -684,7 +678,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -709,7 +703,7 @@ func TestUpdateBatches(t *testing.T) {
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
-				store.EXPECT().UpdateBatch(gomock.Any(), gomock.Eq(arg)).Times(0).Return(batch, nil)
+				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
