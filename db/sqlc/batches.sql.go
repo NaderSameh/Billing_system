@@ -13,18 +13,17 @@ import (
 const createBatch = `-- name: CreateBatch :one
 INSERT INTO batches (
   name, activation_status, customer_id, 
-  mrc_id, no_of_devices, delivery_date, warranty_end
+  no_of_devices, delivery_date, warranty_end
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6
 )
-RETURNING id, name, activation_status, customer_id, no_of_devices, mrc_id, delivery_date, warranty_end
+RETURNING id, name, activation_status, customer_id, no_of_devices, delivery_date, warranty_end
 `
 
 type CreateBatchParams struct {
 	Name             string       `json:"name"`
 	ActivationStatus string       `json:"activation_status"`
 	CustomerID       int64        `json:"customer_id"`
-	MrcID            int64        `json:"mrc_id"`
 	NoOfDevices      int32        `json:"no_of_devices"`
 	DeliveryDate     sql.NullTime `json:"delivery_date"`
 	WarrantyEnd      sql.NullTime `json:"warranty_end"`
@@ -35,7 +34,6 @@ func (q *Queries) CreateBatch(ctx context.Context, arg CreateBatchParams) (Batch
 		arg.Name,
 		arg.ActivationStatus,
 		arg.CustomerID,
-		arg.MrcID,
 		arg.NoOfDevices,
 		arg.DeliveryDate,
 		arg.WarrantyEnd,
@@ -47,7 +45,6 @@ func (q *Queries) CreateBatch(ctx context.Context, arg CreateBatchParams) (Batch
 		&i.ActivationStatus,
 		&i.CustomerID,
 		&i.NoOfDevices,
-		&i.MrcID,
 		&i.DeliveryDate,
 		&i.WarrantyEnd,
 	)
@@ -64,8 +61,28 @@ func (q *Queries) DeleteBatch(ctx context.Context, id int64) error {
 	return err
 }
 
+const getBatchByName = `-- name: GetBatchByName :one
+SELECT id, name, activation_status, customer_id, no_of_devices, delivery_date, warranty_end FROM batches
+WHERE name = $1 LIMIT 1
+`
+
+func (q *Queries) GetBatchByName(ctx context.Context, name string) (Batch, error) {
+	row := q.db.QueryRowContext(ctx, getBatchByName, name)
+	var i Batch
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.ActivationStatus,
+		&i.CustomerID,
+		&i.NoOfDevices,
+		&i.DeliveryDate,
+		&i.WarrantyEnd,
+	)
+	return i, err
+}
+
 const getBatchForUpdate = `-- name: GetBatchForUpdate :one
-SELECT id, name, activation_status, customer_id, no_of_devices, mrc_id, delivery_date, warranty_end FROM batches
+SELECT id, name, activation_status, customer_id, no_of_devices, delivery_date, warranty_end FROM batches
 WHERE id = $1 LIMIT 1
 FOR NO KEY UPDATE
 `
@@ -79,7 +96,6 @@ func (q *Queries) GetBatchForUpdate(ctx context.Context, id int64) (Batch, error
 		&i.ActivationStatus,
 		&i.CustomerID,
 		&i.NoOfDevices,
-		&i.MrcID,
 		&i.DeliveryDate,
 		&i.WarrantyEnd,
 	)
@@ -87,10 +103,9 @@ func (q *Queries) GetBatchForUpdate(ctx context.Context, id int64) (Batch, error
 }
 
 const listAllBatches = `-- name: ListAllBatches :many
-SELECT id, name, activation_status, customer_id, no_of_devices, mrc_id, delivery_date, warranty_end FROM batches
+SELECT id, name, activation_status, customer_id, no_of_devices, delivery_date, warranty_end FROM batches
 WHERE (name = $3 OR $3 IS NULL)
 AND (customer_id = $4 OR $4 IS NULL)
-AND (mrc_id = $5 OR $5 IS NULL)
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -101,7 +116,6 @@ type ListAllBatchesParams struct {
 	Offset     int32          `json:"offset"`
 	Name       sql.NullString `json:"name"`
 	CustomerID sql.NullInt64  `json:"customer_id"`
-	MrcID      sql.NullInt64  `json:"mrc_id"`
 }
 
 func (q *Queries) ListAllBatches(ctx context.Context, arg ListAllBatchesParams) ([]Batch, error) {
@@ -110,7 +124,6 @@ func (q *Queries) ListAllBatches(ctx context.Context, arg ListAllBatchesParams) 
 		arg.Offset,
 		arg.Name,
 		arg.CustomerID,
-		arg.MrcID,
 	)
 	if err != nil {
 		return nil, err
@@ -125,7 +138,6 @@ func (q *Queries) ListAllBatches(ctx context.Context, arg ListAllBatchesParams) 
 			&i.ActivationStatus,
 			&i.CustomerID,
 			&i.NoOfDevices,
-			&i.MrcID,
 			&i.DeliveryDate,
 			&i.WarrantyEnd,
 		); err != nil {
@@ -144,35 +156,33 @@ func (q *Queries) ListAllBatches(ctx context.Context, arg ListAllBatchesParams) 
 
 const updateBatch = `-- name: UpdateBatch :one
 UPDATE batches
-SET mrc_id = $2,
+SET
 customer_id = $3,
 activation_status = $4,
 no_of_devices = $5,
 delivery_date = $6,
-warranty_end = $7
+warranty_end = $2
 WHERE id = $1
-RETURNING id, name, activation_status, customer_id, no_of_devices, mrc_id, delivery_date, warranty_end
+RETURNING id, name, activation_status, customer_id, no_of_devices, delivery_date, warranty_end
 `
 
 type UpdateBatchParams struct {
 	ID               int64        `json:"id"`
-	MrcID            int64        `json:"mrc_id"`
+	WarrantyEnd      sql.NullTime `json:"warranty_end"`
 	CustomerID       int64        `json:"customer_id"`
 	ActivationStatus string       `json:"activation_status"`
 	NoOfDevices      int32        `json:"no_of_devices"`
 	DeliveryDate     sql.NullTime `json:"delivery_date"`
-	WarrantyEnd      sql.NullTime `json:"warranty_end"`
 }
 
 func (q *Queries) UpdateBatch(ctx context.Context, arg UpdateBatchParams) (Batch, error) {
 	row := q.db.QueryRowContext(ctx, updateBatch,
 		arg.ID,
-		arg.MrcID,
+		arg.WarrantyEnd,
 		arg.CustomerID,
 		arg.ActivationStatus,
 		arg.NoOfDevices,
 		arg.DeliveryDate,
-		arg.WarrantyEnd,
 	)
 	var i Batch
 	err := row.Scan(
@@ -181,7 +191,6 @@ func (q *Queries) UpdateBatch(ctx context.Context, arg UpdateBatchParams) (Batch
 		&i.ActivationStatus,
 		&i.CustomerID,
 		&i.NoOfDevices,
-		&i.MrcID,
 		&i.DeliveryDate,
 		&i.WarrantyEnd,
 	)

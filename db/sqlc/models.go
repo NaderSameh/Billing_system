@@ -15,15 +15,14 @@ type Batch struct {
 	ActivationStatus string       `json:"activation_status"`
 	CustomerID       int64        `json:"customer_id"`
 	NoOfDevices      int32        `json:"no_of_devices"`
-	MrcID            int64        `json:"mrc_id"`
 	DeliveryDate     sql.NullTime `json:"delivery_date"`
 	WarrantyEnd      sql.NullTime `json:"warranty_end"`
 }
 
 type Bundle struct {
-	ID          int64  `json:"id"`
-	Mrc         int32  `json:"mrc"`
-	Description string `json:"description"`
+	ID          int64   `json:"id"`
+	Mrc         float64 `json:"mrc"`
+	Description string  `json:"description"`
 }
 
 type BundlesCustomer struct {
@@ -31,25 +30,20 @@ type BundlesCustomer struct {
 	CustomersID int64 `json:"customers_id"`
 }
 
-type Charge struct {
-	ID         int64   `json:"id"`
-	Paid       float64 `json:"paid"`
-	Due        float64 `json:"due"`
-	CustomerID int64   `json:"customer_id"`
-}
-
 type Customer struct {
-	ID       int64  `json:"id"`
-	Customer string `json:"customer"`
+	ID       int64   `json:"id"`
+	Customer string  `json:"customer"`
+	Paid     float64 `json:"paid"`
+	Due      float64 `json:"due"`
 }
 
 type Order struct {
-	ID        int64        `json:"id"`
-	StartDate time.Time    `json:"start_date"`
-	EndDate   time.Time    `json:"end_date"`
-	BatchID   int64        `json:"batch_id"`
-	BundleID  int64        `json:"bundle_id"`
-	Nrc       sql.NullBool `json:"nrc"`
+	ID        int64           `json:"id"`
+	StartDate time.Time       `json:"start_date"`
+	EndDate   time.Time       `json:"end_date"`
+	BatchID   int64           `json:"batch_id"`
+	BundleID  int64           `json:"bundle_id"`
+	Nrc       sql.NullFloat64 `json:"nrc"`
 }
 
 type PaymentLog struct {
@@ -59,4 +53,5 @@ type PaymentLog struct {
 	ConfirmationDate sql.NullTime `json:"confirmation_date"`
 	OrderID          int64        `json:"order_id"`
 	Confirmed        bool         `json:"confirmed"`
+	CustomerID       int64        `json:"customer_id"`
 }

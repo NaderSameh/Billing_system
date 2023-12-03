@@ -7,6 +7,9 @@ INSERT INTO orders (
 RETURNING *;
 
 
+-- name: GetOrderByID :one
+SELECT * FROM orders
+WHERE id = $1 LIMIT 1;
 
 -- name: ListOrdersByBundleID :many
 SELECT * FROM orders
@@ -20,15 +23,16 @@ WHERE batch_id = $1
 ORDER BY batch_id;
 
 
+
 -- name: UpdateOrders :one
 UPDATE orders
-SET nrc = $2,
-bundle_id = $3,
-start_date = $4,
-end_date = $5
+SET
+  nrc = COALESCE(sqlc.narg('nrc'), nrc),
+  bundle_id = $2,
+  start_date = COALESCE(sqlc.narg('start_date'), start_date),
+  end_date = $3
 WHERE id = $1
 RETURNING *;
-
 
 -- name: DeleteOrder :exec
 DELETE FROM orders

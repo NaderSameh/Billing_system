@@ -21,11 +21,11 @@ RETURNING id, start_date, end_date, batch_id, bundle_id, nrc
 `
 
 type CreateOrderParams struct {
-	StartDate time.Time    `json:"start_date"`
-	EndDate   time.Time    `json:"end_date"`
-	BatchID   int64        `json:"batch_id"`
-	BundleID  int64        `json:"bundle_id"`
-	Nrc       sql.NullBool `json:"nrc"`
+	StartDate time.Time       `json:"start_date"`
+	EndDate   time.Time       `json:"end_date"`
+	BatchID   int64           `json:"batch_id"`
+	BundleID  int64           `json:"bundle_id"`
+	Nrc       sql.NullFloat64 `json:"nrc"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -56,6 +56,25 @@ WHERE id = $1
 func (q *Queries) DeleteOrder(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteOrder, id)
 	return err
+}
+
+const getOrderByID = `-- name: GetOrderByID :one
+SELECT id, start_date, end_date, batch_id, bundle_id, nrc FROM orders
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetOrderByID(ctx context.Context, id int64) (Order, error) {
+	row := q.db.QueryRowContext(ctx, getOrderByID, id)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.StartDate,
+		&i.EndDate,
+		&i.BatchID,
+		&i.BundleID,
+		&i.Nrc,
+	)
+	return i, err
 }
 
 const listOrdersByBatchID = `-- name: ListOrdersByBatchID :many
@@ -132,29 +151,30 @@ func (q *Queries) ListOrdersByBundleID(ctx context.Context, bundleID int64) ([]O
 
 const updateOrders = `-- name: UpdateOrders :one
 UPDATE orders
-SET nrc = $2,
-bundle_id = $3,
-start_date = $4,
-end_date = $5
+SET
+  nrc = COALESCE($4, nrc),
+  bundle_id = $2,
+  start_date = COALESCE($5, start_date),
+  end_date = $3
 WHERE id = $1
 RETURNING id, start_date, end_date, batch_id, bundle_id, nrc
 `
 
 type UpdateOrdersParams struct {
-	ID        int64        `json:"id"`
-	Nrc       sql.NullBool `json:"nrc"`
-	BundleID  int64        `json:"bundle_id"`
-	StartDate time.Time    `json:"start_date"`
-	EndDate   time.Time    `json:"end_date"`
+	ID        int64           `json:"id"`
+	BundleID  int64           `json:"bundle_id"`
+	EndDate   time.Time       `json:"end_date"`
+	Nrc       sql.NullFloat64 `json:"nrc"`
+	StartDate sql.NullTime    `json:"start_date"`
 }
 
 func (q *Queries) UpdateOrders(ctx context.Context, arg UpdateOrdersParams) (Order, error) {
 	row := q.db.QueryRowContext(ctx, updateOrders,
 		arg.ID,
-		arg.Nrc,
 		arg.BundleID,
-		arg.StartDate,
 		arg.EndDate,
+		arg.Nrc,
+		arg.StartDate,
 	)
 	var i Order
 	err := row.Scan(

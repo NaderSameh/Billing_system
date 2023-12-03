@@ -1,17 +1,16 @@
 CREATE TABLE "batches" (
   "id" bigserial PRIMARY KEY,
-  "name" varchar NOT NULL,
+  "name" varchar UNIQUE NOT NULL,
   "activation_status" varchar NOT NULL,
   "customer_id" bigserial NOT NULL,
   "no_of_devices" integer NOT NULL,
-  "mrc_id" bigserial NOT NULL,
   "delivery_date" timestamptz,
   "warranty_end" timestamptz
 );
 
 CREATE TABLE "bundles" (
   "id" bigserial PRIMARY KEY,
-  "mrc" integer NOT NULL,
+  "mrc" float NOT NULL,
   "description" text NOT NULL
 );
 
@@ -21,7 +20,7 @@ CREATE TABLE "orders" (
   "end_date" timestamptz NOT NULL,
   "batch_id" bigserial NOT NULL,
   "bundle_id" bigserial NOT NULL,
-  "nrc" boolean
+  "nrc" float
 );
 
 CREATE TABLE "payment_logs" (
@@ -37,7 +36,7 @@ CREATE TABLE "charges" (
   "id" bigserial PRIMARY KEY,
   "paid" float NOT NULL,
   "due" float NOT NULL,
-  "customer_id" bigserial NOT NULL
+  "customer_id" bigserial UNIQUE NOT NULL
 );
 
 CREATE TABLE "customers" (
@@ -59,9 +58,9 @@ CREATE TABLE "bundles_customers" (
   PRIMARY KEY ("bundles_id", "customers_id")
 );
 
-ALTER TABLE "bundles_customers" ADD FOREIGN KEY ("bundles_id") REFERENCES "bundles" ("id");
+ALTER TABLE "bundles_customers" ADD FOREIGN KEY ("bundles_id") REFERENCES "bundles" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "bundles_customers" ADD FOREIGN KEY ("customers_id") REFERENCES "customers" ("id");
+ALTER TABLE "bundles_customers" ADD FOREIGN KEY ("customers_id") REFERENCES "customers" ("id") ON DELETE CASCADE;
 
 
 ALTER TABLE "batches" ADD FOREIGN KEY ("customer_id") REFERENCES "customers" ("id");

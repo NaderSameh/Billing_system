@@ -17,7 +17,7 @@ func createRandomOrder() Order {
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Hour * 50),
 		BatchID:   batch.ID,
-		Nrc:       sql.NullBool{Bool: true, Valid: true},
+		Nrc:       sql.NullFloat64{Float64: 10000.50, Valid: true},
 		BundleID:  bundle.ID,
 	}
 	order, _ := testQueries.CreateOrder(context.Background(), arg)
@@ -26,11 +26,13 @@ func createRandomOrder() Order {
 
 func createRandomPaymentLog() PaymentLog {
 	order := createRandomOrder()
+	customer := createRandomCustomer()
 	arg := CreatePaymentParams{
-		Payment:   rand.Float64() * 10000,
-		DueDate:   time.Now().Add(time.Hour * 10),
-		OrderID:   order.ID,
-		Confirmed: false,
+		Payment:    rand.Float64() * 10000,
+		DueDate:    time.Now().Add(time.Hour * 10),
+		OrderID:    order.ID,
+		Confirmed:  false,
+		CustomerID: customer.ID,
 	}
 
 	payment, _ := testQueries.CreatePayment(context.Background(), arg)
@@ -38,11 +40,13 @@ func createRandomPaymentLog() PaymentLog {
 }
 func TestCreatePayment(t *testing.T) {
 	order := createRandomOrder()
+	customer := createRandomCustomer()
 	arg := CreatePaymentParams{
-		Payment:   rand.Float64() * 10000,
-		DueDate:   time.Now().Add(time.Hour * 10),
-		OrderID:   order.ID,
-		Confirmed: false,
+		Payment:    rand.Float64() * 10000,
+		DueDate:    time.Now().Add(time.Hour * 10),
+		OrderID:    order.ID,
+		Confirmed:  false,
+		CustomerID: customer.ID,
 	}
 
 	payment, err := testQueries.CreatePayment(context.Background(), arg)
@@ -66,32 +70,43 @@ func TestGetPaymentForUpdate(t *testing.T) {
 	require.Equal(t, paymentLog, payment_log2)
 }
 
-func TestListPaymentByConfirmation(t *testing.T) {
+func TestListPayments(t *testing.T) {
 	for n := 0; n < 10; n++ {
 		createRandomPaymentLog()
 	}
-
-	paymentLogs, err := testQueries.ListPaymentByConfirmation(context.Background(), false)
+	arg := ListPaymentsParams{
+		Confirmed:  sql.NullBool{Bool: true, Valid: false},
+		CustomerID: sql.NullInt64{Int64: rand.Int63(), Valid: false},
+	}
+	paymentLogs, err := testQueries.ListPayments(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, paymentLogs)
+
+	arg2 := ListPaymentsParams{
+		Confirmed:  sql.NullBool{Bool: true, Valid: true},
+		CustomerID: sql.NullInt64{Int64: rand.Int63(), Valid: true},
+	}
+	paymentLogs, err = testQueries.ListPayments(context.Background(), arg2)
+	require.NoError(t, err)
+
 }
 
 func TestUpdatePayment(t *testing.T) {
 	paymentLog := createRandomPaymentLog()
 
 	arg := UpdatePaymentParams{
-		ID:               paymentLog.ID,
-		DueDate:          paymentLog.DueDate.AddDate(0, 0, 4),
-		ConfirmationDate: sql.NullTime{Time: time.Now(), Valid: true},
-		OrderID:          paymentLog.OrderID,
-		Confirmed:        true,
+		ID:      paymentLog.ID,
+		DueDate: sql.NullTime{Time: paymentLog.DueDate.AddDate(0, 0, 4), Valid: true},
+
+		Confirmed: true,
 	}
 
 	paymentLog_2, err := testQueries.UpdatePayment(context.Background(), arg)
 	require.NoError(t, err)
 	require.Equal(t, arg.ID, paymentLog_2.ID)
-	require.Equal(t, arg.DueDate, paymentLog_2.DueDate)
-	require.WithinDuration(t, arg.ConfirmationDate.Time, paymentLog_2.ConfirmationDate.Time, time.Second)
-	require.Equal(t, arg.OrderID, paymentLog_2.OrderID)
+	require.Equal(t, arg.DueDate.Time, paymentLog_2.DueDate)
 	require.Equal(t, arg.Confirmed, paymentLog_2.Confirmed)
+	arg.ID = rand.Int63() + 200
+	paymentLog_2, err = testQueries.UpdatePayment(context.Background(), arg)
+	require.Equal(t, err, sql.ErrNoRows)
 }

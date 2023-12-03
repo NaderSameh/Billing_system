@@ -1,0 +1,639 @@
+basePath: /
+definitions:
+  api.assignBundleRequest:
+    properties:
+      bundle_id:
+        minimum: 1
+        type: integer
+      customer_name:
+        minLength: 1
+        type: string
+    required:
+    - bundle_id
+    - customer_name
+    type: object
+  api.createBatchRequest:
+    properties:
+      activation_status:
+        enum:
+        - active
+        - inactive
+        - suspended
+        - canceled
+        type: string
+      customer_name:
+        minLength: 1
+        type: string
+      delivery_date:
+        type: string
+      name:
+        minLength: 1
+        type: string
+      no_of_devices:
+        minimum: 1
+        type: integer
+      warranty_end:
+        type: string
+    required:
+    - activation_status
+    - customer_name
+    - name
+    - no_of_devices
+    type: object
+  api.createBundleRequest:
+    properties:
+      description:
+        type: string
+      mrc:
+        minimum: 1
+        type: number
+    required:
+    - description
+    - mrc
+    type: object
+  api.createOrderRequest:
+    properties:
+      batch_name:
+        minLength: 1
+        type: string
+    required:
+    - batch_name
+    type: object
+  api.updateBatchRequestJSON:
+    properties:
+      activation_status:
+        type: string
+      customer_name:
+        type: string
+      delivery_date:
+        $ref: '#/definitions/sql.NullTime'
+      no_of_devices:
+        type: integer
+      warranty_end:
+        $ref: '#/definitions/sql.NullTime'
+    type: object
+  api.updateOrderRequestJSON:
+    properties:
+      bundle_id:
+        minimum: 1
+        type: integer
+      end_date:
+        type: string
+      nrc:
+        $ref: '#/definitions/sql.NullFloat64'
+      start_date:
+        $ref: '#/definitions/sql.NullTime'
+    required:
+    - bundle_id
+    - end_date
+    type: object
+  api.updatePaymentLogRequestJSON:
+    properties:
+      confirmed:
+        type: boolean
+      due_date:
+        $ref: '#/definitions/sql.NullTime'
+    required:
+    - confirmed
+    type: object
+  db.Batch:
+    properties:
+      activation_status:
+        type: string
+      customer_id:
+        type: integer
+      delivery_date:
+        $ref: '#/definitions/sql.NullTime'
+      id:
+        type: integer
+      name:
+        type: string
+      no_of_devices:
+        type: integer
+      warranty_end:
+        $ref: '#/definitions/sql.NullTime'
+    type: object
+  db.Bundle:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      mrc:
+        type: number
+    type: object
+  db.Customer:
+    properties:
+      customer:
+        type: string
+      due:
+        type: number
+      id:
+        type: integer
+      paid:
+        type: number
+    type: object
+  db.Order:
+    properties:
+      batch_id:
+        type: integer
+      bundle_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      nrc:
+        $ref: '#/definitions/sql.NullFloat64'
+      start_date:
+        type: string
+    type: object
+  db.PaymentLog:
+    properties:
+      confirmation_date:
+        $ref: '#/definitions/sql.NullTime'
+      confirmed:
+        type: boolean
+      customer_id:
+        type: integer
+      due_date:
+        type: string
+      id:
+        type: integer
+      order_id:
+        type: integer
+      payment:
+        type: number
+    type: object
+  sql.NullFloat64:
+    properties:
+      float64:
+        type: number
+      valid:
+        description: Valid is true if Float64 is not NULL
+        type: boolean
+    type: object
+  sql.NullTime:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: naders@cypodsolutions.com
+    name: Cypodsolutions
+    url: http://www.cypod.com/
+  description: Ticketing support microservice
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Gin Swagger Example API
+  version: "1.0"
+paths:
+  /batches:
+    get:
+      description: List all batches with optional filter "customer_name", pagination
+        params are required
+      parameters:
+      - description: 'Filter: customer name'
+        in: query
+        name: customer_name
+        type: string
+      - description: Page ID
+        in: query
+        name: page_id
+        required: true
+        type: integer
+      - description: Page Size
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Batch'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: List Batches
+      tags:
+      - batches
+    post:
+      consumes:
+      - application/json
+      description: Create a new Batch specifying its name
+      parameters:
+      - description: Create Batch body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.createBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Batch'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create new Batch
+      tags:
+      - batches
+  /batches/{batch_id}:
+    delete:
+      description: Delete batch by a batch ID
+      parameters:
+      - description: Batch ID
+        in: path
+        name: batch_id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: "true"
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete Batch
+      tags:
+      - batches
+    put:
+      consumes:
+      - application/json
+      description: Update Batch by a Batch ID
+      parameters:
+      - description: Update Batch body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateBatchRequestJSON'
+      - description: Batch ID for update
+        in: path
+        name: batch_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Batch'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Update Batch
+      tags:
+      - batches
+  /bundles:
+    get:
+      consumes:
+      - application/json
+      description: Get bundles for a specific customer - get all system bundles if
+        no customer specified
+      parameters:
+      - description: Get bundle body
+        in: query
+        name: customer_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Bundle'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get Bundles
+      tags:
+      - bundles
+    post:
+      consumes:
+      - application/json
+      description: Create a new Bundle specifying its name
+      parameters:
+      - description: Create bundle body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.createBundleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Bundle'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create new Bundle
+      tags:
+      - bundles
+  /bundles/{bundle_id}:
+    delete:
+      description: Delete  Bundle
+      parameters:
+      - description: Bundle ID
+        in: path
+        name: bundle_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: "true"
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete  Bundle
+      tags:
+      - bundles
+  /bundles/assign:
+    post:
+      consumes:
+      - application/json
+      description: Assign a bundle to a specific customer using bundle id and customer
+        name
+      parameters:
+      - description: Assign bundle body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.assignBundleRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: bool
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Assign bundle to customer
+      tags:
+      - bundles
+  /charges:
+    get:
+      description: List all charges on a customer (optional filter), list all charges
+        in the system
+      parameters:
+      - description: 'Filter: customer name'
+        in: query
+        name: customer_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Customer'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: List Charges
+      tags:
+      - customer_charges
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Create a new order specifying its batch name, it will create with
+        no NRC, default MRC for 1 year
+      parameters:
+      - description: Create Order body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.createOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Order'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Create new Order
+      tags:
+      - orders
+    put:
+      consumes:
+      - application/json
+      description: Update an order specifying its end date, bundle mrc, nrc flag
+      parameters:
+      - description: Create Order body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateOrderRequestJSON'
+      - description: order ID for update
+        in: path
+        name: order_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Order'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Update Order with actual params
+      tags:
+      - orders
+  /payments_logs:
+    get:
+      description: List payments, filtering by confirmation & customer id are optional
+        params, pagination params is required
+      parameters:
+      - description: Page ID
+        in: query
+        name: page_id
+        required: true
+        type: integer
+      - description: Page Size
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      - description: customer_id
+        in: query
+        name: customer_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.PaymentLog'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: List Payments
+      tags:
+      - payments logs
+  /payments_logs/{log_id}:
+    delete:
+      description: Delete a payment log, removing its corresponding charges from the
+        customer total charges
+      parameters:
+      - description: Log ID
+        in: path
+        name: log_id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: "true"
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Delete Payment Log
+      tags:
+      - payments logs
+    put:
+      consumes:
+      - application/json
+      description: Update Payment log's due date & confirmation using the payment
+        log ID
+      parameters:
+      - description: Update log body
+        in: body
+        name: arg
+        required: true
+        schema:
+          $ref: '#/definitions/api.updatePaymentLogRequestJSON'
+      - description: payment log ID for update
+        in: path
+        name: log_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.PaymentLog'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Update Payment
+      tags:
+      - payments logs
+schemes:
+- http
+swagger: "2.0"

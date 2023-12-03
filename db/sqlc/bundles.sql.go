@@ -37,8 +37,8 @@ RETURNING id, mrc, description
 `
 
 type CreateBundleParams struct {
-	Mrc         int32  `json:"mrc"`
-	Description string `json:"description"`
+	Mrc         float64 `json:"mrc"`
+	Description string  `json:"description"`
 }
 
 func (q *Queries) CreateBundle(ctx context.Context, arg CreateBundleParams) (Bundle, error) {
@@ -58,37 +58,64 @@ func (q *Queries) DeleteBundle(ctx context.Context, id int64) error {
 	return err
 }
 
+const getBundleByID = `-- name: GetBundleByID :one
+SELECT id, mrc, description FROM bundles 
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetBundleByID(ctx context.Context, id int64) (Bundle, error) {
+	row := q.db.QueryRowContext(ctx, getBundleByID, id)
+	var i Bundle
+	err := row.Scan(&i.ID, &i.Mrc, &i.Description)
+	return i, err
+}
+
+const listAllBundles = `-- name: ListAllBundles :many
+SELECT id, mrc, description FROM bundles
+ORDER BY id
+`
+
+func (q *Queries) ListAllBundles(ctx context.Context) ([]Bundle, error) {
+	rows, err := q.db.QueryContext(ctx, listAllBundles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Bundle{}
+	for rows.Next() {
+		var i Bundle
+		if err := rows.Scan(&i.ID, &i.Mrc, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listBundlesByCustomerID = `-- name: ListBundlesByCustomerID :many
-SELECT id, mrc, description, bundles_id, customers_id FROM bundles
+SELECT bundles.id, bundles.mrc, bundles.description
+FROM bundles
 JOIN bundles_customers ON bundles.id = bundles_customers.bundles_id
 WHERE bundles_customers.customers_id = $1
 ORDER BY bundles_customers.customers_id
 `
 
-type ListBundlesByCustomerIDRow struct {
-	ID          int64  `json:"id"`
-	Mrc         int32  `json:"mrc"`
-	Description string `json:"description"`
-	BundlesID   int64  `json:"bundles_id"`
-	CustomersID int64  `json:"customers_id"`
-}
-
-func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64) ([]ListBundlesByCustomerIDRow, error) {
+func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64) ([]Bundle, error) {
 	rows, err := q.db.QueryContext(ctx, listBundlesByCustomerID, customersID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListBundlesByCustomerIDRow{}
+	items := []Bundle{}
 	for rows.Next() {
-		var i ListBundlesByCustomerIDRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Mrc,
-			&i.Description,
-			&i.BundlesID,
-			&i.CustomersID,
-		); err != nil {
+		var i Bundle
+		if err := rows.Scan(&i.ID, &i.Mrc, &i.Description); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -1,17 +1,20 @@
 -- name: CreatePayment :one
 INSERT INTO payment_logs (
-  payment, due_date, order_id, confirmed
+  payment, due_date, order_id, confirmed, customer_id
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
 
 
 
--- name: ListPaymentByConfirmation :many
+-- name: ListPayments :many
 SELECT * FROM payment_logs
-WHERE confirmed = $1
+WHERE (confirmed = sqlc.narg('confirmed') OR sqlc.narg('confirmed') IS NULL) AND
+(customer_id = sqlc.narg('customer_id') OR sqlc.narg('customer_id') IS NULL)
 ORDER BY id;
+
+
 
 -- name: GetPaymentForUpdate :one
 SELECT * FROM payment_logs
@@ -22,10 +25,9 @@ FOR NO KEY UPDATE;
 
 -- name: UpdatePayment :one
 UPDATE payment_logs
-SET due_date = $2,
-confirmation_date = $3,
-order_id = $4,
-confirmed = $5
+SET   due_date = COALESCE(sqlc.narg('due_date'), due_date),
+confirmed = $2,
+confirmation_date = $3
 WHERE id = $1
 RETURNING *;
 

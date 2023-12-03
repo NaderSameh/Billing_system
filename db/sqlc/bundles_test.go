@@ -11,7 +11,7 @@ import (
 
 func TestCreateBundle(t *testing.T) {
 	arg := CreateBundleParams{
-		Mrc:         rand.Int31n(100),
+		Mrc:         rand.ExpFloat64(),
 		Description: util.GenerateRandomString(25),
 	}
 	bundle, err := testQueries.CreateBundle(context.Background(), arg)

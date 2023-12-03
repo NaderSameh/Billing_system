@@ -16,7 +16,7 @@ func TestCreateOrder(t *testing.T) {
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Hour * 50),
 		BatchID:   batch.ID,
-		Nrc:       sql.NullBool{Bool: true, Valid: true},
+		Nrc:       sql.NullFloat64{Float64: 10000.50, Valid: true},
 		BundleID:  bundle.ID,
 	}
 	order, err := testQueries.CreateOrder(context.Background(), arg)
@@ -36,7 +36,7 @@ func TestDeleteOrder(t *testing.T) {
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Hour * 50),
 		BatchID:   batch.ID,
-		Nrc:       sql.NullBool{Bool: true, Valid: true},
+		Nrc:       sql.NullFloat64{Float64: 10000.50, Valid: true},
 		BundleID:  bundle.ID,
 	}
 	order, err := testQueries.CreateOrder(context.Background(), arg)
@@ -55,7 +55,7 @@ func TestListOrdersByBatchID(t *testing.T) {
 			StartDate: time.Now(),
 			EndDate:   time.Now().Add(time.Hour * 50),
 			BatchID:   batch.ID,
-			Nrc:       sql.NullBool{Bool: true, Valid: true},
+			Nrc:       sql.NullFloat64{Float64: 10000.50, Valid: true},
 			BundleID:  bundle.ID,
 		}
 		_, err := testQueries.CreateOrder(context.Background(), arg)
@@ -76,7 +76,7 @@ func TestListOrdersByBundleID(t *testing.T) {
 			StartDate: time.Now(),
 			EndDate:   time.Now().Add(time.Hour * 50),
 			BatchID:   batch.ID,
-			Nrc:       sql.NullBool{Bool: true, Valid: true},
+			Nrc:       sql.NullFloat64{Float64: 10000.50, Valid: true},
 			BundleID:  bundle.ID,
 		}
 		_, err := testQueries.CreateOrder(context.Background(), arg)
@@ -97,7 +97,7 @@ func TestUpdateOrders(t *testing.T) {
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Hour * 50),
 		BatchID:   batch.ID,
-		Nrc:       sql.NullBool{Bool: true, Valid: true},
+		Nrc:       sql.NullFloat64{Float64: 10000.50, Valid: true},
 		BundleID:  bundle.ID,
 	}
 	order, err := testQueries.CreateOrder(context.Background(), arg)
@@ -105,9 +105,9 @@ func TestUpdateOrders(t *testing.T) {
 
 	arg2 := UpdateOrdersParams{
 		ID:        order.ID,
-		Nrc:       sql.NullBool{Bool: false, Valid: false},
+		Nrc:       sql.NullFloat64{Float64: 20000.50, Valid: true},
 		BundleID:  bundle.ID,
-		StartDate: time.Now(),
+		StartDate: sql.NullTime{Time: time.Now(), Valid: true},
 		EndDate:   time.Now().Add(time.Hour * 100),
 	}
 
@@ -115,6 +115,6 @@ func TestUpdateOrders(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, orderUpdated.Nrc, arg2.Nrc)
 	require.Equal(t, orderUpdated.BundleID, arg2.BundleID)
-	require.WithinDuration(t, orderUpdated.StartDate, arg2.StartDate, time.Second)
+	require.WithinDuration(t, orderUpdated.StartDate, arg2.StartDate.Time, time.Second)
 	require.WithinDuration(t, orderUpdated.EndDate, arg2.EndDate, time.Second)
 }

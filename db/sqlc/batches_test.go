@@ -13,7 +13,7 @@ import (
 
 func createRandomBundle() Bundle {
 	arg := CreateBundleParams{
-		Mrc:         rand.Int31n(100),
+		Mrc:         rand.Float64() * 100,
 		Description: util.GenerateRandomString(20),
 	}
 	bundle, _ := testQueries.CreateBundle(context.Background(), arg)
@@ -21,32 +21,35 @@ func createRandomBundle() Bundle {
 }
 
 func createRandomCustomer() Customer {
+
 	customer, _ := testQueries.CreateCustomer(context.Background(), util.GenerateRandomString(9))
 	return customer
 }
 
 func createRandomBatch() Batch {
-	bundle := createRandomBundle()
+
 	customer := createRandomCustomer()
 	param := CreateBatchParams{
-		Name:             "Random batch",
+		Name:             util.GenerateRandomString(20),
 		ActivationStatus: "Active",
 		CustomerID:       customer.ID,
-		MrcID:            int64(bundle.ID),
+		NoOfDevices:      100,
 	}
 	batch, _ := testQueries.CreateBatch(context.Background(), param)
+
 	return batch
 }
 
 func TestCreateBatch(t *testing.T) {
-	bundle := createRandomBundle()
 	customer := createRandomCustomer()
 
 	param := CreateBatchParams{
-		Name:             "Random batch",
+		Name:             util.GenerateRandomString(10),
 		ActivationStatus: "Active",
 		CustomerID:       customer.ID,
-		MrcID:            int64(bundle.ID),
+		NoOfDevices:      rand.Int31(),
+		DeliveryDate:     sql.NullTime{Time: time.Now(), Valid: true},
+		WarrantyEnd:      sql.NullTime{Time: time.Now(), Valid: true},
 	}
 
 	batch, err := testQueries.CreateBatch(context.Background(), param)
@@ -55,7 +58,6 @@ func TestCreateBatch(t *testing.T) {
 	require.Equal(t, batch.Name, param.Name)
 	require.Equal(t, batch.ActivationStatus, param.ActivationStatus)
 	require.Equal(t, batch.CustomerID, param.CustomerID)
-	require.Equal(t, batch.MrcID, param.MrcID)
 
 }
 
@@ -82,12 +84,10 @@ func TestGetBatch(t *testing.T) {
 
 func TestUpdateBatch(t *testing.T) {
 	batch := createRandomBatch()
-	new_bundle := createRandomBundle()
 	customer := createRandomCustomer()
 
 	arg := UpdateBatchParams{
 		ID:               batch.ID,
-		MrcID:            new_bundle.ID,
 		CustomerID:       customer.ID,
 		ActivationStatus: "Inactive",
 		NoOfDevices:      batch.NoOfDevices + 10,
@@ -98,7 +98,6 @@ func TestUpdateBatch(t *testing.T) {
 	batch_2, err := testQueries.UpdateBatch(context.Background(), arg)
 	require.NoError(t, err)
 	require.Equal(t, batch_2.ID, arg.ID)
-	require.Equal(t, batch_2.MrcID, arg.MrcID)
 	require.Equal(t, batch_2.CustomerID, arg.CustomerID)
 	require.Equal(t, batch_2.ActivationStatus, arg.ActivationStatus)
 	require.Equal(t, batch_2.NoOfDevices, arg.NoOfDevices)
@@ -114,7 +113,7 @@ func TestListAllBatches(t *testing.T) {
 	arg := ListAllBatchesParams{
 		Limit:  5,
 		Offset: 0,
-		Name:   sql.NullString{String: batch.Name, Valid: true},
+		Name:   sql.NullString{String: batch.Name, Valid: false},
 	}
 	batch_2, err := testQueries.ListAllBatches(context.Background(), arg)
 	require.NoError(t, err)
