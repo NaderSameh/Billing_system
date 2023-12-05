@@ -114,13 +114,6 @@ func TestUpdateMonthlyBillingMockSecond(t *testing.T) {
 			config := CronJobConfiguration{Interval: 1, Unit: CronSecond, Name: "test 1 sec"}
 			cron, _ := NewTestCron(t, store, config)
 			time.Sleep(time.Millisecond * 500)
-
-			// go func() {
-			// 	for {
-			// 		schedule_date := job.ScheduledTime()
-			// 		log.Info().Time("end of the month date", schedule_date).Msg("Monthly scheduled job date")
-			// 	}
-			// }()
 			cron.StopCron()
 
 		})
@@ -149,7 +142,9 @@ func TestUpdateMonthlyBilling(t *testing.T) {
 			},
 			checkdate: func(schedule_time time.Time) {
 				now := time.Now()
-				require.WithinDuration(t, schedule_time, time.Date(now.Year(), now.Month(), 28, 23, 59, 0, 0, time.UTC), time.Second)
+				estimate_time := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+				estimate_time = estimate_time.AddDate(0, 1, -1)
+				require.WithinDuration(t, schedule_time, estimate_time, time.Second)
 			},
 		},
 	}
@@ -168,6 +163,8 @@ func TestUpdateMonthlyBilling(t *testing.T) {
 			cron, J := NewTestCron(t, store, config)
 
 			tc.Schedule_date = J.job.ScheduledTime()
+
+			tc.checkdate(tc.Schedule_date)
 
 			cron.StopCron()
 
