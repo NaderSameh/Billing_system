@@ -301,6 +301,21 @@ func (mr *MockStoreMockRecorder) GetPaymentForUpdate(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentForUpdate", reflect.TypeOf((*MockStore)(nil).GetPaymentForUpdate), arg0, arg1)
 }
 
+// ListAllActiveOrders mocks base method.
+func (m *MockStore) ListAllActiveOrders(arg0 context.Context) ([]db.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllActiveOrders", arg0)
+	ret0, _ := ret[0].([]db.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllActiveOrders indicates an expected call of ListAllActiveOrders.
+func (mr *MockStoreMockRecorder) ListAllActiveOrders(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllActiveOrders", reflect.TypeOf((*MockStore)(nil).ListAllActiveOrders), arg0)
+}
+
 // ListAllBatches mocks base method.
 func (m *MockStore) ListAllBatches(arg0 context.Context, arg1 db.ListAllBatchesParams) ([]db.Batch, error) {
 	m.ctrl.T.Helper()

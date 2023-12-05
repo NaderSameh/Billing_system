@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"runtime"
+	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/naderSameh/billing_system/api"
+	"github.com/naderSameh/billing_system/cron"
 	db "github.com/naderSameh/billing_system/db/sqlc"
 	"github.com/naderSameh/billing_system/util"
 
@@ -48,6 +50,17 @@ func main() {
 	server, err := api.NewServer(store)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create server")
+	}
+
+	config := cron.CronJobConfiguration{
+		Interval: 1,
+		Unit:     cron.CronEndOfMonth,
+		Name:     "Monthly Billing",
+	}
+	cron, _ := cron.NewGoCronScheduler(time.UTC, config, store)
+	err = cron.StartCron()
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot start scheduler")
 	}
 
 	server.Start(viper.GetString("SERVER_ADDRESS"))

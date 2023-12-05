@@ -23,6 +23,12 @@ WHERE batch_id = $1
 ORDER BY batch_id;
 
 
+-- name: ListAllActiveOrders :many
+SELECT * FROM orders
+WHERE start_date <= NOW()
+AND end_date > NOW()
+AND nrc is NULL;
+
 
 -- name: UpdateOrders :one
 UPDATE orders

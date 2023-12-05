@@ -40,7 +40,6 @@ func (server *Server) createBatch(c *gin.Context) {
 	var customer db.Customer
 	var err error
 	customer, err = server.store.GetCustomerID(c, req.CustomerName)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			customer, err = server.store.CreateCustomer(c, req.CustomerName)

@@ -176,7 +176,6 @@ func (server *Server) updateOrder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-
 	if req.Nrc.Valid == true {
 		arg2 := db.CreatePaymentParams{
 			Confirmed: false,

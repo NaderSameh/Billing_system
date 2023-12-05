@@ -7,6 +7,7 @@ package db
 import (
 	"context"
 	"database/sql"
+
 )
 
 type Querier interface {
@@ -28,6 +29,7 @@ type Querier interface {
 	GetCustomerID(ctx context.Context, customer string) (Customer, error)
 	GetOrderByID(ctx context.Context, id int64) (Order, error)
 	GetPaymentForUpdate(ctx context.Context, id int64) (PaymentLog, error)
+	ListAllActiveOrders(ctx context.Context) ([]Order, error)
 	ListAllBatches(ctx context.Context, arg ListAllBatchesParams) ([]Batch, error)
 	ListAllBundles(ctx context.Context) ([]Bundle, error)
 	ListAllCharges(ctx context.Context, name sql.NullString) ([]Customer, error)
