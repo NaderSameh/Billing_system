@@ -1,0 +1,92 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_SOURCE=postgresql://nader:nader123@postgres:5432/billing_system?sslmode=disable
+      - REDDIS_ADDR=redis:6379
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - billing_app
+    entrypoint: [ "/app/start.sh" ]
+    command: [ "/app/main" ]
+  redis:
+    image: redis:7-alpine
+    networks:
+      - billing_app
+  postgres:
+    image: postgres:alpine3.18
+    environment:
+      - POSTGRES_USER=nader
+      - POSTGRES_PASSWORD=nader123
+      - POSTGRES_DB=billing_system
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U nader -d billing_system" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - data-volume:/var/lib/postgresql/data
+    networks:
+      - billing_app
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./config/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./config/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/grafana.json
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+      - billing_app
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - billing_app
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./config/promtail.yaml:/etc/promtail/docker-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/docker-config.yaml
+    depends_on:
+      - loki
+    networks:
+      - billing_app
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./config/prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - billing_app
+    ports:
+      - 9090:9090
+
+networks:
+  billing_app:
+    name: billing_app
+volumes:
+  data-volume:
