@@ -62,6 +62,7 @@ func TestCreateOrder(t *testing.T) {
 				// //arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
 
 				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, nil)
 				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(1).Return(order, nil)
 				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, nil)
 				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(1).Return(payment, nil)
@@ -80,7 +81,61 @@ func TestCreateOrder(t *testing.T) {
 			buildstuds: func(store *mockdb.MockStore) {
 				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
 				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, nil)
 				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(1).Return(order, nil)
+				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, nil)
+				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(1).Return(payment, nil)
+				store.EXPECT().AddToDue(gomock.Any(), gomock.Any()).Times(1).Return(customers, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+
+		{
+			name: "OK - default bundle",
+			body: gin.H{
+				"batch_name": batch.Name,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
+				bundles := []db.Bundle{
+					{ID: 10, Mrc: 100, Description: "default bundle"},
+				}
+				arg := db.CreateOrderParams{
+					StartDate: time.Now().Round(time.Second),
+					EndDate:   time.Now().AddDate(1, 0, 0).Round(time.Second),
+					BatchID:   batch.ID,
+					BundleID:  bundles[0].ID,
+				}
+				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return(bundles, nil)
+				store.EXPECT().CreateOrder(gomock.Any(), gomock.Eq(arg)).Times(1).Return(order, nil)
+				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, nil)
+				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(1).Return(payment, nil)
+				store.EXPECT().AddToDue(gomock.Any(), gomock.Any()).Times(1).Return(customers, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "OK - no default bundle",
+			body: gin.H{
+				"batch_name": batch.Name,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
+				bundles := []db.Bundle{}
+				arg := db.CreateOrderParams{
+					StartDate: time.Now().Round(time.Second),
+					EndDate:   time.Now().AddDate(1, 0, 0).Round(time.Second),
+					BatchID:   batch.ID,
+					BundleID:  1,
+				}
+				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return(bundles, nil)
+				store.EXPECT().CreateOrder(gomock.Any(), gomock.Eq(arg)).Times(1).Return(order, nil)
 				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, nil)
 				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(1).Return(payment, nil)
 				store.EXPECT().AddToDue(gomock.Any(), gomock.Any()).Times(1).Return(customers, nil)
@@ -134,7 +189,27 @@ func TestCreateOrder(t *testing.T) {
 				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
 
 				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, nil)
 				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(1).Return(order, sql.ErrConnDone)
+				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(0).Return(bundle, nil)
+				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(0).Return(payment, nil)
+				store.EXPECT().AddToDue(gomock.Any(), gomock.Any()).Times(0).Return(customers, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name: "Internal server error - list bundles",
+			body: gin.H{
+				"batch_name": batch.Name,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
+
+				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, sql.ErrConnDone)
+				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(0).Return(order, nil)
 				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(0).Return(bundle, nil)
 				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(0).Return(payment, nil)
 				store.EXPECT().AddToDue(gomock.Any(), gomock.Any()).Times(0).Return(customers, nil)
@@ -152,6 +227,7 @@ func TestCreateOrder(t *testing.T) {
 				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
 
 				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, nil)
 				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(1).Return(order, nil)
 				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, sql.ErrConnDone)
 				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(0).Return(payment, nil)
@@ -170,6 +246,7 @@ func TestCreateOrder(t *testing.T) {
 				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
 
 				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, nil)
 				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(1).Return(order, nil)
 				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, nil)
 				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(1).Return(payment, sql.ErrConnDone)
@@ -188,6 +265,7 @@ func TestCreateOrder(t *testing.T) {
 				//arg := db.AddToDueParams{Amount: bundle.Mrc * float64(batch.NoOfDevices), ID: batch.CustomerID}
 
 				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Eq(batch.Name)).Times(1).Return(batch, nil)
+				store.EXPECT().ListBundlesByCustomerID(gomock.Any(), gomock.Eq(batch.CustomerID)).Times(1).Return([]db.Bundle{}, nil)
 				store.EXPECT().CreateOrder(gomock.Any(), gomock.Any()).Times(1).Return(order, nil)
 				store.EXPECT().GetBundleByID(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(bundle, nil)
 				store.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Times(1).Return(payment, nil)

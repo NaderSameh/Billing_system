@@ -47,11 +47,23 @@ func (server *Server) createOrder(c *gin.Context) {
 			return
 		}
 	}
+
+	bundles, err := server.store.ListBundlesByCustomerID(c, batch.CustomerID)
+	if err != nil {
+
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+
+	}
 	arg := db.CreateOrderParams{
-		StartDate: time.Now(),
-		EndDate:   time.Now().AddDate(1, 0, 0),
+		StartDate: time.Now().Round(time.Second),
+		EndDate:   time.Now().AddDate(1, 0, 0).Round(time.Second),
 		BatchID:   batch.ID,
-		BundleID:  1,
+	}
+	if len(bundles) == 0 {
+		arg.BundleID = 1
+	} else {
+		arg.BundleID = bundles[0].ID
 	}
 	order, err := server.store.CreateOrder(c, arg)
 	if err != nil {
