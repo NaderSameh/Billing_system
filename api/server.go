@@ -3,7 +3,9 @@ package api
 import (
 	_ "github.com/naderSameh/billing_system/docs"
 	"github.com/naderSameh/billing_system/limiter"
+	"github.com/naderSameh/billing_system/worker"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/naderSameh/billing_system/db/sqlc"
@@ -16,11 +18,14 @@ type Server struct {
 	router *gin.Engine
 }
 
+var taskDistributor worker.TaskDistributor
+
 func NewServer(store db.Store) (*Server, error) {
 	server := &Server{
 		store: store,
 	}
 	server.setupRouter()
+	taskDistributor = worker.NewRedisDistributor(viper.GetString("REDDIS_ADDR"))
 
 	return server, nil
 }
@@ -69,7 +74,7 @@ func SetupCORS(router *gin.Engine) {
 }
 
 func SetupRateLimiter(router *gin.Engine) {
-	limiter, err := limiter.NewRateLimiter("60-M")
+	limiter, err := limiter.NewRateLimiter(viper.GetString("RATE_LIMIT"))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to setup rate limiter")
 	}

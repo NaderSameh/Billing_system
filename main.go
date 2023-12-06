@@ -9,7 +9,9 @@ import (
 	"github.com/naderSameh/billing_system/api"
 	"github.com/naderSameh/billing_system/cron"
 	db "github.com/naderSameh/billing_system/db/sqlc"
+	"github.com/naderSameh/billing_system/mail"
 	"github.com/naderSameh/billing_system/util"
+	"github.com/naderSameh/billing_system/worker"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -63,9 +65,21 @@ func main() {
 		log.Fatal().Err(err).Msg("cannot start scheduler")
 	}
 
+	go runTaskProcessor(viper.GetString("REDDIS_ADDR"))
+
 	server.Start(viper.GetString("SERVER_ADDRESS"))
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot start server:")
 	}
 
+}
+
+func runTaskProcessor(RedisAddress string) {
+	mailer := mail.NewGmailSender(viper.GetString("GMAIL_NAME"), viper.GetString("GMAIL_EMAIL"), viper.GetString("GMAIL_PASS"))
+	taskProcessor := worker.NewRedisTaskProcessor(RedisAddress, mailer)
+	log.Info().Msg("start task processor")
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to start task processor")
+	}
 }

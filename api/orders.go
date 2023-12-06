@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	db "github.com/naderSameh/billing_system/db/sqlc"
+	"github.com/naderSameh/billing_system/worker"
 )
 
 type createOrderRequest struct {
@@ -77,7 +79,25 @@ func (server *Server) createOrder(c *gin.Context) {
 		return
 	}
 
-	_, err = server.store.AddToDue(c, db.AddToDueParams{Amount: arg2.Payment, ID: batch.CustomerID})
+	charges, err := server.store.AddToDue(c, db.AddToDueParams{Amount: arg2.Payment, ID: batch.CustomerID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	taskPayload := &worker.PayloadSendEmail{
+		OrderID:      order.ID,
+		BatchName:    batch.Name,
+		BatchID:      arg.BatchID,
+		CustomerName: charges.Customer,
+	}
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+
+	err = taskDistributor.NewEmailDeliveryTask(taskPayload, opts...)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

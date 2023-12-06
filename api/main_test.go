@@ -34,5 +34,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Print("cannot load config")
 	}
+
 	os.Exit(m.Run())
 }

@@ -12,7 +12,7 @@ sqlc:
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/naderSameh/billing_system/db/sqlc Store
-	# mockgen -package mockwk -destination worker/mock/distributor.go github.com/naderSameh/billing_system/worker TaskDistributor
+	mockgen -package mockwk -destination worker/mock/distributor.go github.com/naderSameh/billing_system/worker TaskDistributor
 
 test:
 	go test -cover -short ./...
