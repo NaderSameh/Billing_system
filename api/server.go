@@ -2,6 +2,8 @@ package api
 
 import (
 	_ "github.com/naderSameh/billing_system/docs"
+	"github.com/naderSameh/billing_system/limiter"
+	"github.com/rs/zerolog/log"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/naderSameh/billing_system/db/sqlc"
@@ -19,11 +21,16 @@ func NewServer(store db.Store) (*Server, error) {
 		store: store,
 	}
 	server.setupRouter()
+
 	return server, nil
 }
 
 func (server *Server) setupRouter() {
 	r := gin.Default()
+
+	SetupCORS(r)
+	SetupRateLimiter(r)
+
 	r.POST("/batches", server.createBatch)
 	r.DELETE("/batches/:batch_id", server.deleteBatch)
 	r.GET("/batches", server.listBatches)
@@ -55,4 +62,17 @@ func (server *Server) Start(address string) error {
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func SetupCORS(router *gin.Engine) {
+	router.Use(CORSMiddleware())
+}
+
+func SetupRateLimiter(router *gin.Engine) {
+	limiter, err := limiter.NewRateLimiter("60-M")
+	if err != nil {
+		log.Error().Err(err).Msg("failed to setup rate limiter")
+	}
+	limiterMiddleware, err := limiter.SetupRateLimiter()
+	router.Use(limiterMiddleware)
 }
