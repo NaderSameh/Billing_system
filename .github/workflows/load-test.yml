@@ -47,7 +47,7 @@ jobs:
          done
       - name: move jtl files to test_report
         run: |
-         mv *.jtl $GITHUB_WORKSPACE/test_report
+         mv $GITHUB_WORKSPACE/load-test/*.jtl $GITHUB_WORKSPACE/test_report
      
       - name: Upload JMeter Test Results
         uses: actions/upload-artifact@v2.2.4
