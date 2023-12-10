@@ -23,6 +23,11 @@ jobs:
         run: |
            pwd
            ls
+
+      - name: run the app 
+        run: docker compose up 
+
+        
       - name: create test_report
         run: |
            mkdir $GITHUB_WORKSPACE/test_report
