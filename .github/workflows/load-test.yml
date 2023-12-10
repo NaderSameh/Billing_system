@@ -15,16 +15,16 @@ jobs:
   run_app:
     runs-on: ubuntu-latest
 
-  steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-    - name: where are the files?
-      run: |
-          pwd
-          ls
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: where are the files?
+        run: |
+            pwd
+            ls
 
-    - name: run the app 
-      run: docker compose up 
+      - name: run the app 
+        run: docker compose up 
 
 
   # This workflow contains a single job called "build"
