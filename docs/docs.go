@@ -938,7 +938,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"http", "https"},
 	Title:            "Gin Swagger Example API",
 	Description:      "Ticketing support microservice",
 	InfoInstanceName: "swagger",
