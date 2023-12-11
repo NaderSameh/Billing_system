@@ -636,4 +636,5 @@ paths:
       - payments logs
 schemes:
 - http
+- https
 swagger: "2.0"

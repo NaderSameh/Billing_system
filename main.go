@@ -31,7 +31,7 @@ import (
 
 // @host		localhost:8080
 // @BasePath	/
-// @schemes	http
+// @schemes	http https
 func main() {
 
 	err := util.Loadconfig(".")
