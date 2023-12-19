@@ -219,6 +219,12 @@ func (server *Server) updateBatch(c *gin.Context) {
 	}
 	var customer db.Customer
 	var err error
+	batch, err := server.store.GetBatchForUpdate(c, reqURI.BatchID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	if req.CustomerName != "" {
 		customer, err = server.store.GetCustomerID(c, req.CustomerName)
 		if err != nil {
@@ -229,18 +235,19 @@ func (server *Server) updateBatch(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
+		batch.CustomerID = customer.ID
 	}
 
 	arg := db.UpdateBatchParams{
 		ID:               reqURI.BatchID,
 		ActivationStatus: req.ActivationStatus,
 		WarrantyEnd:      sql.NullTime{Time: req.WarrantyEnd.Time.Round(time.Second), Valid: req.WarrantyEnd.Valid},
-		CustomerID:       customer.ID,
+		CustomerID:       batch.CustomerID,
 		NoOfDevices:      req.NoOfDevices,
 		DeliveryDate:     sql.NullTime{Time: req.DeliveryDate.Time.Round(time.Second), Valid: req.DeliveryDate.Valid},
 	}
 
-	batch, err := server.store.UpdateBatch(c, arg)
+	batch, err = server.store.UpdateBatch(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

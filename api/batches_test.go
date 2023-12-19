@@ -546,6 +546,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(1).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, nil)
 			},
@@ -572,6 +573,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(0).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(0).Return(customer, nil)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
@@ -599,6 +601,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(0).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(0).Return(customer, nil)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
@@ -624,6 +627,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(1).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrConnDone)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
@@ -650,6 +654,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(1).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batch, sql.ErrConnDone)
 			},
@@ -677,6 +682,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(1).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
@@ -702,6 +708,7 @@ func TestUpdateBatches(t *testing.T) {
 					NoOfDevices:      batch.NoOfDevices * 10,
 					DeliveryDate:     sql.NullTime{Time: batch.DeliveryDate.Time.AddDate(0, 1, 0), Valid: true},
 				}
+				store.EXPECT().GetBatchForUpdate(gomock.Any(), gomock.Any()).Times(1).Return(batch, nil)
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, sql.ErrNoRows)
 				store.EXPECT().UpdateBatch(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(batch, nil)
 			},
