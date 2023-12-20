@@ -34,7 +34,7 @@ type Querier interface {
 	ListAllBundles(ctx context.Context) ([]Bundle, error)
 	ListAllCharges(ctx context.Context, name sql.NullString) ([]Customer, error)
 	ListBundlesByCustomerID(ctx context.Context, customersID int64) ([]Bundle, error)
-	ListBundlesWithCustomers(ctx context.Context) ([]ListBundlesWithCustomersRow, error)
+	ListBundlesWithCustomer(ctx context.Context) ([]ListBundlesWithCustomerRow, error)
 	ListOrdersByBatchID(ctx context.Context, batchID int64) ([]Order, error)
 	ListOrdersByBundleID(ctx context.Context, bundleID int64) ([]Order, error)
 	ListPayments(ctx context.Context, arg ListPaymentsParams) ([]PaymentLog, error)

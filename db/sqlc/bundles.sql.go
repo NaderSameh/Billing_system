@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 )
 
 const addBundleToCustomer = `-- name: AddBundleToCustomer :exec
@@ -129,37 +130,39 @@ func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64
 	return items, nil
 }
 
-const listBundlesWithCustomers = `-- name: ListBundlesWithCustomers :many
-SELECT b.id AS bundle_id, b.mrc, b.description, c.id AS customer_id, c.customer
+const listBundlesWithCustomer = `-- name: ListBundlesWithCustomer :many
+WITH BundleCustomers AS (
+  SELECT bc.bundles_id, json_agg(json_build_object('customer_id', c.id, 'customer', c.customer)) AS assigned_customers
+  FROM bundles_customers bc
+  JOIN customers c ON c.id = bc.customers_id
+  GROUP BY bc.bundles_id
+)
+SELECT b.id AS bundle_id, b.mrc, b.description, COALESCE(bc.assigned_customers, '[]'::json)
 FROM bundles b
-JOIN bundles_customers bc ON b.id = bc.bundles_id
-JOIN customers c ON c.id = bc.customers_id
-ORDER BY b.id, c.id
+LEFT JOIN BundleCustomers bc ON b.id = bc.bundles_id
 `
 
-type ListBundlesWithCustomersRow struct {
-	BundleID    int64   `json:"bundle_id"`
-	Mrc         float64 `json:"mrc"`
-	Description string  `json:"description"`
-	CustomerID  int64   `json:"customer_id"`
-	Customer    string  `json:"customer"`
+type ListBundlesWithCustomerRow struct {
+	BundleID          int64           `json:"bundle_id"`
+	Mrc               float64         `json:"mrc"`
+	Description       string          `json:"description"`
+	AssignedCustomers json.RawMessage `json:"assigned_customers"`
 }
 
-func (q *Queries) ListBundlesWithCustomers(ctx context.Context) ([]ListBundlesWithCustomersRow, error) {
-	rows, err := q.db.QueryContext(ctx, listBundlesWithCustomers)
+func (q *Queries) ListBundlesWithCustomer(ctx context.Context) ([]ListBundlesWithCustomerRow, error) {
+	rows, err := q.db.QueryContext(ctx, listBundlesWithCustomer)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListBundlesWithCustomersRow{}
+	items := []ListBundlesWithCustomerRow{}
 	for rows.Next() {
-		var i ListBundlesWithCustomersRow
+		var i ListBundlesWithCustomerRow
 		if err := rows.Scan(
 			&i.BundleID,
 			&i.Mrc,
 			&i.Description,
-			&i.CustomerID,
-			&i.Customer,
+			&i.AssignedCustomers,
 		); err != nil {
 			return nil, err
 		}

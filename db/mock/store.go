@@ -391,19 +391,19 @@ func (mr *MockStoreMockRecorder) ListBundlesByCustomerID(arg0, arg1 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBundlesByCustomerID", reflect.TypeOf((*MockStore)(nil).ListBundlesByCustomerID), arg0, arg1)
 }
 
-// ListBundlesWithCustomers mocks base method.
-func (m *MockStore) ListBundlesWithCustomers(arg0 context.Context) ([]db.ListBundlesWithCustomersRow, error) {
+// ListBundlesWithCustomer mocks base method.
+func (m *MockStore) ListBundlesWithCustomer(arg0 context.Context) ([]db.ListBundlesWithCustomerRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListBundlesWithCustomers", arg0)
-	ret0, _ := ret[0].([]db.ListBundlesWithCustomersRow)
+	ret := m.ctrl.Call(m, "ListBundlesWithCustomer", arg0)
+	ret0, _ := ret[0].([]db.ListBundlesWithCustomerRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListBundlesWithCustomers indicates an expected call of ListBundlesWithCustomers.
-func (mr *MockStoreMockRecorder) ListBundlesWithCustomers(arg0 interface{}) *gomock.Call {
+// ListBundlesWithCustomer indicates an expected call of ListBundlesWithCustomer.
+func (mr *MockStoreMockRecorder) ListBundlesWithCustomer(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBundlesWithCustomers", reflect.TypeOf((*MockStore)(nil).ListBundlesWithCustomers), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBundlesWithCustomer", reflect.TypeOf((*MockStore)(nil).ListBundlesWithCustomer), arg0)
 }
 
 // ListOrdersByBatchID mocks base method.

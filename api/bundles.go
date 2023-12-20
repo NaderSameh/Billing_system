@@ -173,7 +173,7 @@ func (server *Server) getBundles(c *gin.Context) {
 		}
 	} else {
 
-		bundles, err := server.store.ListBundlesWithCustomers(c)
+		bundles, err := server.store.ListBundlesWithCustomer(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
