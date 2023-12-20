@@ -211,6 +211,21 @@ func (mr *MockStoreMockRecorder) DeletePayment(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePayment", reflect.TypeOf((*MockStore)(nil).DeletePayment), arg0, arg1)
 }
 
+// GetAllCustomers mocks base method.
+func (m *MockStore) GetAllCustomers(arg0 context.Context) ([]db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllCustomers", arg0)
+	ret0, _ := ret[0].([]db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllCustomers indicates an expected call of GetAllCustomers.
+func (mr *MockStoreMockRecorder) GetAllCustomers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCustomers", reflect.TypeOf((*MockStore)(nil).GetAllCustomers), arg0)
+}
+
 // GetBatchByName mocks base method.
 func (m *MockStore) GetBatchByName(arg0 context.Context, arg1 string) (db.Batch, error) {
 	m.ctrl.T.Helper()
@@ -374,6 +389,21 @@ func (m *MockStore) ListBundlesByCustomerID(arg0 context.Context, arg1 int64) ([
 func (mr *MockStoreMockRecorder) ListBundlesByCustomerID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBundlesByCustomerID", reflect.TypeOf((*MockStore)(nil).ListBundlesByCustomerID), arg0, arg1)
+}
+
+// ListBundlesWithCustomers mocks base method.
+func (m *MockStore) ListBundlesWithCustomers(arg0 context.Context) ([]db.ListBundlesWithCustomersRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBundlesWithCustomers", arg0)
+	ret0, _ := ret[0].([]db.ListBundlesWithCustomersRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBundlesWithCustomers indicates an expected call of ListBundlesWithCustomers.
+func (mr *MockStoreMockRecorder) ListBundlesWithCustomers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBundlesWithCustomers", reflect.TypeOf((*MockStore)(nil).ListBundlesWithCustomers), arg0)
 }
 
 // ListOrdersByBatchID mocks base method.

@@ -155,7 +155,6 @@ func (server *Server) getBundles(c *gin.Context) {
 		return
 	}
 	var bundles []db.Bundle
-	var err error
 	if req.CustomerName != "" {
 		customer, err := server.store.GetCustomerID(c, req.CustomerName)
 		if err != nil {
@@ -174,11 +173,12 @@ func (server *Server) getBundles(c *gin.Context) {
 		}
 	} else {
 
-		bundles, err = server.store.ListAllBundles(c)
+		bundles, err := server.store.ListBundlesWithCustomers(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
+		c.JSON(http.StatusOK, bundles)
 	}
 
 	c.JSON(http.StatusOK, bundles)

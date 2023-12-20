@@ -19,6 +19,14 @@ SELECT * FROM bundles
 ORDER BY id;
 
 
+-- name: ListBundlesWithCustomers :many
+SELECT b.id AS bundle_id, b.mrc, b.description, c.id AS customer_id, c.customer
+FROM bundles b
+JOIN bundles_customers bc ON b.id = bc.bundles_id
+JOIN customers c ON c.id = bc.customers_id
+ORDER BY b.id, c.id;
+
+
 -- name: GetBundleByID :one
 SELECT * FROM bundles 
 WHERE id = $1 LIMIT 1;

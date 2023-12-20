@@ -80,6 +80,38 @@ func (q *Queries) CreateCustomer(ctx context.Context, customer string) (Customer
 	return i, err
 }
 
+const getAllCustomers = `-- name: GetAllCustomers :many
+SELECT id, customer, paid, due FROM customers
+`
+
+func (q *Queries) GetAllCustomers(ctx context.Context) ([]Customer, error) {
+	rows, err := q.db.QueryContext(ctx, getAllCustomers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Customer{}
+	for rows.Next() {
+		var i Customer
+		if err := rows.Scan(
+			&i.ID,
+			&i.Customer,
+			&i.Paid,
+			&i.Due,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCustomerID = `-- name: GetCustomerID :one
 SELECT id, customer, paid, due FROM customers
 WHERE customer = $1 LIMIT 1

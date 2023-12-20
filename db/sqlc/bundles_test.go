@@ -53,3 +53,18 @@ func TestListAllBundles(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, bundles, 10)
 }
+
+func TestListBundlesWithCustomers(t *testing.T) {
+	bundle := createRandomBundle()
+	Customer := createRandomCustomer()
+	testQueries.AddBundleToCustomer(context.Background(), AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: Customer.ID})
+	bundles, err := testQueries.ListBundlesWithCustomers(context.Background())
+	require.NoError(t, err)
+	for _, b := range bundles {
+		if b.BundleID == bundle.ID {
+			require.Equal(t, b.CustomerID, Customer.ID)
+			require.Equal(t, b.Customer, Customer.Customer)
+		}
+	}
+
+}

@@ -257,7 +257,7 @@ func TestGetBundles(t *testing.T) {
 			name: "List all bundles - no customer name",
 			// CustomerName: "random",
 			buildstuds: func(store *mockdb.MockStore) {
-				store.EXPECT().ListAllBundles(gomock.Any()).Times(1).Return(bundles, nil)
+				store.EXPECT().ListBundlesWithCustomers(gomock.Any()).Times(1).Return([]db.ListBundlesWithCustomersRow{}, nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -291,7 +291,7 @@ func TestGetBundles(t *testing.T) {
 			// CustomerName: "random",
 			buildstuds: func(store *mockdb.MockStore) {
 				// store.EXPECT().GetCustomerID(gomock.Any(), gomock.Eq("random")).Times(1).Return(customer, nil)
-				store.EXPECT().ListAllBundles(gomock.Any()).Times(1).Return(bundles, sql.ErrConnDone)
+				store.EXPECT().ListBundlesWithCustomers(gomock.Any()).Times(1).Return([]db.ListBundlesWithCustomersRow{}, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)

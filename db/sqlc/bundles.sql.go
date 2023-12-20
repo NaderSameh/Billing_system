@@ -128,3 +128,48 @@ func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64
 	}
 	return items, nil
 }
+
+const listBundlesWithCustomers = `-- name: ListBundlesWithCustomers :many
+SELECT b.id AS bundle_id, b.mrc, b.description, c.id AS customer_id, c.customer
+FROM bundles b
+JOIN bundles_customers bc ON b.id = bc.bundles_id
+JOIN customers c ON c.id = bc.customers_id
+ORDER BY b.id, c.id
+`
+
+type ListBundlesWithCustomersRow struct {
+	BundleID    int64   `json:"bundle_id"`
+	Mrc         float64 `json:"mrc"`
+	Description string  `json:"description"`
+	CustomerID  int64   `json:"customer_id"`
+	Customer    string  `json:"customer"`
+}
+
+func (q *Queries) ListBundlesWithCustomers(ctx context.Context) ([]ListBundlesWithCustomersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listBundlesWithCustomers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBundlesWithCustomersRow{}
+	for rows.Next() {
+		var i ListBundlesWithCustomersRow
+		if err := rows.Scan(
+			&i.BundleID,
+			&i.Mrc,
+			&i.Description,
+			&i.CustomerID,
+			&i.Customer,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -12,6 +12,10 @@ SELECT * FROM customers
 WHERE customer = $1 LIMIT 1;
 
 
+
+-- name: GetAllCustomers :many
+SELECT * FROM customers;
+
 -- name: AddToPaid :one
 UPDATE customers
 SET paid = paid + sqlc.arg(amount),
