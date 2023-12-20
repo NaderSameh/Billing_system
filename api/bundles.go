@@ -144,7 +144,7 @@ type getBundlesRequest struct {
 //	@Accept			json
 //	@Param			customer_name	query		string	false	"Get bundle body"
 //
-//	@Success		200				{array}		db.Bundle
+//	@Success		200				{array}		db.ListBundlesWithCustomerRow
 //	@Failure		400				{object}	error
 //	@Failure		500				{object}	error
 //	@Router			/bundles [get]
@@ -179,6 +179,7 @@ func (server *Server) getBundles(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, bundles)
+		return
 	}
 
 	c.JSON(http.StatusOK, bundles)
