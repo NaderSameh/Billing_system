@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 )
 
 const addBundleToCustomer = `-- name: AddBundleToCustomer :exec
@@ -116,6 +117,53 @@ func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64
 	for rows.Next() {
 		var i Bundle
 		if err := rows.Scan(&i.ID, &i.Mrc, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listBundlesWithCustomer = `-- name: ListBundlesWithCustomer :many
+WITH BundleCustomers AS (
+  SELECT bc.bundles_id, json_agg(json_build_object('customer_id', c.id, 'customer', c.customer)) AS assigned_customers
+  FROM bundles_customers bc
+  JOIN customers c ON c.id = bc.customers_id
+  GROUP BY bc.bundles_id
+)
+SELECT b.id AS bundle_id, b.mrc, b.description, COALESCE(bc.assigned_customers, '[]'::json)
+FROM bundles b
+LEFT JOIN BundleCustomers bc ON b.id = bc.bundles_id
+`
+
+type ListBundlesWithCustomerRow struct {
+	BundleID          int64           `json:"bundle_id"`
+	Mrc               float64         `json:"mrc"`
+	Description       string          `json:"description"`
+	AssignedCustomers json.RawMessage `json:"assigned_customers"`
+}
+
+func (q *Queries) ListBundlesWithCustomer(ctx context.Context) ([]ListBundlesWithCustomerRow, error) {
+	rows, err := q.db.QueryContext(ctx, listBundlesWithCustomer)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBundlesWithCustomerRow{}
+	for rows.Next() {
+		var i ListBundlesWithCustomerRow
+		if err := rows.Scan(
+			&i.BundleID,
+			&i.Mrc,
+			&i.Description,
+			&i.AssignedCustomers,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

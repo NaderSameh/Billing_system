@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"math/rand"
 	"testing"
 
@@ -52,4 +53,37 @@ func TestListAllBundles(t *testing.T) {
 	bundles, err := testQueries.ListBundlesByCustomerID(context.Background(), Customer.ID)
 	require.NoError(t, err)
 	require.Len(t, bundles, 10)
+}
+
+func TestListBundlesWithCustomers(t *testing.T) {
+	type bundleWithCustomer struct {
+		CustomerID   int64  `json:"customer_id"`
+		CustomerName string `json:"customer"`
+	}
+	var jsonbundleWithCustomer []bundleWithCustomer
+	bundle := createRandomBundle()
+	Customer := createRandomCustomer()
+	Customer2 := createRandomCustomer()
+	Customer3 := createRandomCustomer()
+	testQueries.AddBundleToCustomer(context.Background(), AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: Customer.ID})
+	testQueries.AddBundleToCustomer(context.Background(), AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: Customer3.ID})
+	testQueries.AddBundleToCustomer(context.Background(), AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: Customer2.ID})
+	bundles, err := testQueries.ListBundlesWithCustomer(context.Background())
+	require.NoError(t, err)
+
+	for _, b := range bundles {
+		if b.BundleID == bundle.ID {
+			err := json.Unmarshal(b.AssignedCustomers, &jsonbundleWithCustomer)
+			require.NoError(t, err)
+			require.Equal(t, b.BundleID, bundle.ID)
+			require.Equal(t, jsonbundleWithCustomer[0].CustomerID, Customer.ID)
+			require.Equal(t, jsonbundleWithCustomer[0].CustomerName, Customer.Customer)
+			require.Equal(t, jsonbundleWithCustomer[1].CustomerID, Customer3.ID)
+			require.Equal(t, jsonbundleWithCustomer[1].CustomerName, Customer3.Customer)
+			require.Equal(t, jsonbundleWithCustomer[2].CustomerID, Customer2.ID)
+			require.Equal(t, jsonbundleWithCustomer[2].CustomerName, Customer2.Customer)
+
+		}
+	}
+
 }

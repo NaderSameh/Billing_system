@@ -19,6 +19,18 @@ SELECT * FROM bundles
 ORDER BY id;
 
 
+-- name: ListBundlesWithCustomer :many
+WITH BundleCustomers AS (
+  SELECT bc.bundles_id, json_agg(json_build_object('customer_id', c.id, 'customer', c.customer)) AS assigned_customers
+  FROM bundles_customers bc
+  JOIN customers c ON c.id = bc.customers_id
+  GROUP BY bc.bundles_id
+)
+SELECT b.id AS bundle_id, b.mrc, b.description, COALESCE(bc.assigned_customers, '[]'::json)
+FROM bundles b
+LEFT JOIN BundleCustomers bc ON b.id = bc.bundles_id;
+
+
 -- name: GetBundleByID :one
 SELECT * FROM bundles 
 WHERE id = $1 LIMIT 1;
