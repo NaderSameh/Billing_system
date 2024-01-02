@@ -233,3 +233,26 @@ func (server *Server) updateOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 
 }
+
+// GetOrder godoc
+//
+//	@Summary		Get all orders
+//	@Description	Get all placed order with details
+//	@Tags			orders
+//	@Produce		json
+//
+//	@Success		200			{object}	db.Order
+//	@Failure		404			{object}	error
+//	@Failure		500			{object}	error
+//	@Router			/orders [get]
+func (server *Server) getOrder(c *gin.Context) {
+
+	orders, err := server.store.ListAllOrders(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, orders)
+
+}

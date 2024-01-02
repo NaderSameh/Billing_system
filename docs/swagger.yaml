@@ -133,6 +133,19 @@ definitions:
       paid:
         type: number
     type: object
+  db.ListBundlesWithCustomerRow:
+    properties:
+      assigned_customers:
+        items:
+          type: integer
+        type: array
+      bundle_id:
+        type: integer
+      description:
+        type: string
+      mrc:
+        type: number
+    type: object
   db.Order:
     properties:
       batch_id:
@@ -340,7 +353,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/db.Bundle'
+              $ref: '#/definitions/db.ListBundlesWithCustomerRow'
             type: array
         "400":
           description: Bad Request
@@ -466,6 +479,24 @@ paths:
       tags:
       - customer_charges
   /orders:
+    get:
+      description: Get all placed order with details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Order'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get all orders
+      tags:
+      - orders
     post:
       consumes:
       - application/json

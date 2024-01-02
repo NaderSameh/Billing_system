@@ -80,20 +80,47 @@ func (q *Queries) GetPaymentForUpdate(ctx context.Context, id int64) (PaymentLog
 	return i, err
 }
 
+const listAllPaymentsCount = `-- name: ListAllPaymentsCount :one
+SELECT COUNT(*) FROM payment_logs
+WHERE (confirmed = $1 OR $1 IS NULL)
+AND (customer_id = $2 OR $2 IS NULL)
+`
+
+type ListAllPaymentsCountParams struct {
+	Confirmed  sql.NullBool  `json:"confirmed"`
+	CustomerID sql.NullInt64 `json:"customer_id"`
+}
+
+func (q *Queries) ListAllPaymentsCount(ctx context.Context, arg ListAllPaymentsCountParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, listAllPaymentsCount, arg.Confirmed, arg.CustomerID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const listPayments = `-- name: ListPayments :many
 SELECT id, payment, due_date, confirmation_date, order_id, confirmed, customer_id FROM payment_logs
-WHERE (confirmed = $1 OR $1 IS NULL) AND
-(customer_id = $2 OR $2 IS NULL)
+WHERE (confirmed = $3 OR $3 IS NULL) AND
+(customer_id = $4 OR $4 IS NULL)
 ORDER BY id
+LIMIT $1
+OFFSET $2
 `
 
 type ListPaymentsParams struct {
+	Limit      int32         `json:"limit"`
+	Offset     int32         `json:"offset"`
 	Confirmed  sql.NullBool  `json:"confirmed"`
 	CustomerID sql.NullInt64 `json:"customer_id"`
 }
 
 func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]PaymentLog, error) {
-	rows, err := q.db.QueryContext(ctx, listPayments, arg.Confirmed, arg.CustomerID)
+	rows, err := q.db.QueryContext(ctx, listPayments,
+		arg.Limit,
+		arg.Offset,
+		arg.Confirmed,
+		arg.CustomerID,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -375,6 +375,8 @@ func TestListBatches(t *testing.T) {
 				}
 				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
 				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batches, nil)
+				store.EXPECT().ListAllBatchesCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -457,6 +459,7 @@ func TestListBatches(t *testing.T) {
 				}
 				// store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(customer, nil)
 				store.EXPECT().ListAllBatches(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(batches, nil)
+				store.EXPECT().ListAllBatchesCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)

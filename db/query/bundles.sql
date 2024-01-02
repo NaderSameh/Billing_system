@@ -31,6 +31,21 @@ FROM bundles b
 LEFT JOIN BundleCustomers bc ON b.id = bc.bundles_id;
 
 
+
+-- name: DeleteOldBundleCustomers :exec
+DELETE FROM bundles_customers
+WHERE bundles_id = $1;
+
+-- name: InsertNewBundleCustomers :exec
+INSERT INTO bundles_customers (bundles_id, customers_id)
+SELECT
+    $2 AS bundles_id,
+    (data->>'customer_id')::bigint AS customers_id
+FROM json_array_elements($1::json) AS data;
+
+
+
+
 -- name: GetBundleByID :one
 SELECT * FROM bundles 
 WHERE id = $1 LIMIT 1;

@@ -127,13 +127,19 @@ func TestAssignBundle(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"customer_name": customer.Customer,
-				"bundle_id":     bundle.ID,
+				"bundle_id": bundle.ID,
+				"assigned_customers": gin.H{
+					"customer_id": customer.ID,
+				},
 			},
 			buildstuds: func(store *mockdb.MockStore) {
-				arg := db.AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: customer.ID}
-				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Eq(customer.Customer)).Times(1).Return(customer, nil)
-				store.EXPECT().AddBundleToCustomer(gomock.Any(), gomock.Eq(arg)).Times(1).Return(nil)
+				AssignedCusomers := json.RawMessage(fmt.Sprintf(`{"customer_id":%d}`, customer.ID))
+				arg := db.InsertNewBundleCustomersParams{
+					Column1:   AssignedCusomers,
+					BundlesID: bundle.ID,
+				}
+				store.EXPECT().DeleteOldBundleCustomers(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(nil)
+				store.EXPECT().InsertNewBundleCustomers(gomock.Any(), gomock.Eq(arg)).Times(1).Return(nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -143,13 +149,19 @@ func TestAssignBundle(t *testing.T) {
 		{
 			name: "invalid param",
 			body: gin.H{
-				// "customer_name": customer.Customer,
-				"bundle_id": bundle.ID,
+				// "bundle_id": bundle.ID,
+				"assigned_customers": gin.H{
+					"customer_id": customer.ID,
+				},
 			},
 			buildstuds: func(store *mockdb.MockStore) {
-				arg := db.AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: customer.ID}
-				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Eq(customer.Customer)).Times(0).Return(customer, nil)
-				store.EXPECT().AddBundleToCustomer(gomock.Any(), gomock.Eq(arg)).Times(0).Return(nil)
+				AssignedCusomers := json.RawMessage(fmt.Sprintf(`{"customer_id":%d}`, customer.ID))
+				arg := db.InsertNewBundleCustomersParams{
+					Column1:   AssignedCusomers,
+					BundlesID: bundle.ID,
+				}
+				store.EXPECT().DeleteOldBundleCustomers(gomock.Any(), gomock.Eq(bundle.ID)).Times(0).Return(nil)
+				store.EXPECT().InsertNewBundleCustomers(gomock.Any(), gomock.Eq(arg)).Times(0).Return(nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -159,13 +171,19 @@ func TestAssignBundle(t *testing.T) {
 		{
 			name: "internal server error - get customer ID",
 			body: gin.H{
-				"customer_name": customer.Customer,
-				"bundle_id":     bundle.ID,
+				"bundle_id": bundle.ID,
+				"assigned_customers": gin.H{
+					"customer_id": customer.ID,
+				},
 			},
 			buildstuds: func(store *mockdb.MockStore) {
-				arg := db.AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: customer.ID}
-				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Eq(customer.Customer)).Times(1).Return(customer, sql.ErrConnDone)
-				store.EXPECT().AddBundleToCustomer(gomock.Any(), gomock.Eq(arg)).Times(0).Return(nil)
+				AssignedCusomers := json.RawMessage(fmt.Sprintf(`{"customer_id":%d}`, customer.ID))
+				arg := db.InsertNewBundleCustomersParams{
+					Column1:   AssignedCusomers,
+					BundlesID: bundle.ID,
+				}
+				store.EXPECT().DeleteOldBundleCustomers(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(sql.ErrConnDone)
+				store.EXPECT().InsertNewBundleCustomers(gomock.Any(), gomock.Eq(arg)).Times(0).Return(nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -174,31 +192,22 @@ func TestAssignBundle(t *testing.T) {
 		{
 			name: "internal server error - assign bundle",
 			body: gin.H{
-				"customer_name": customer.Customer,
-				"bundle_id":     bundle.ID,
+				"bundle_id": bundle.ID,
+				"assigned_customers": gin.H{
+					"customer_id": customer.ID,
+				},
 			},
 			buildstuds: func(store *mockdb.MockStore) {
-				arg := db.AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: customer.ID}
-				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Eq(customer.Customer)).Times(1).Return(customer, nil)
-				store.EXPECT().AddBundleToCustomer(gomock.Any(), gomock.Eq(arg)).Times(1).Return(sql.ErrConnDone)
+				AssignedCusomers := json.RawMessage(fmt.Sprintf(`{"customer_id":%d}`, customer.ID))
+				arg := db.InsertNewBundleCustomersParams{
+					Column1:   AssignedCusomers,
+					BundlesID: bundle.ID,
+				}
+				store.EXPECT().DeleteOldBundleCustomers(gomock.Any(), gomock.Eq(bundle.ID)).Times(1).Return(nil)
+				store.EXPECT().InsertNewBundleCustomers(gomock.Any(), gomock.Eq(arg)).Times(1).Return(sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-			},
-		},
-		{
-			name: "internal server error - assign bundle",
-			body: gin.H{
-				"customer_name": customer.Customer,
-				"bundle_id":     bundle.ID,
-			},
-			buildstuds: func(store *mockdb.MockStore) {
-				// arg := db.AddBundleToCustomerParams{BundlesID: bundle.ID, CustomersID: customer.ID}
-				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Eq(customer.Customer)).Times(1).Return(customer, sql.ErrNoRows)
-				// store.EXPECT().AddBundleToCustomer(gomock.Any(), gomock.Eq(arg)).Times(1).Return(sql.ErrConnDone)
-			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
 	}

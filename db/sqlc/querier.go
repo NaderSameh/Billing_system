@@ -7,6 +7,7 @@ package db
 import (
 	"context"
 	"database/sql"
+
 )
 
 type Querier interface {
@@ -20,6 +21,7 @@ type Querier interface {
 	CreatePayment(ctx context.Context, arg CreatePaymentParams) (PaymentLog, error)
 	DeleteBatch(ctx context.Context, id int64) error
 	DeleteBundle(ctx context.Context, id int64) error
+	DeleteOldBundleCustomers(ctx context.Context, bundlesID int64) error
 	DeleteOrder(ctx context.Context, id int64) error
 	DeletePayment(ctx context.Context, id int64) error
 	GetAllCustomers(ctx context.Context) ([]Customer, error)
@@ -29,10 +31,14 @@ type Querier interface {
 	GetCustomerID(ctx context.Context, customer string) (Customer, error)
 	GetOrderByID(ctx context.Context, id int64) (Order, error)
 	GetPaymentForUpdate(ctx context.Context, id int64) (PaymentLog, error)
+	InsertNewBundleCustomers(ctx context.Context, arg InsertNewBundleCustomersParams) error
 	ListAllActiveOrders(ctx context.Context) ([]Order, error)
 	ListAllBatches(ctx context.Context, arg ListAllBatchesParams) ([]Batch, error)
+	ListAllBatchesCount(ctx context.Context, arg ListAllBatchesCountParams) (int64, error)
 	ListAllBundles(ctx context.Context) ([]Bundle, error)
 	ListAllCharges(ctx context.Context, name sql.NullString) ([]Customer, error)
+	ListAllOrders(ctx context.Context) ([]Order, error)
+	ListAllPaymentsCount(ctx context.Context, arg ListAllPaymentsCountParams) (int64, error)
 	ListBundlesByCustomerID(ctx context.Context, customersID int64) ([]Bundle, error)
 	ListBundlesWithCustomer(ctx context.Context) ([]ListBundlesWithCustomerRow, error)
 	ListOrdersByBatchID(ctx context.Context, batchID int64) ([]Order, error)

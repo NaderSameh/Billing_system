@@ -428,7 +428,13 @@ func TestListPayments(t *testing.T) {
 						Valid: true,
 					},
 				}
+
+				arg2 := db.ListAllPaymentsCountParams{
+					Confirmed:  arg.Confirmed,
+					CustomerID: arg.CustomerID,
+				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Eq(arg2)).Times(1).Return(int64(10), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -454,6 +460,7 @@ func TestListPayments(t *testing.T) {
 					},
 				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(11), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -479,6 +486,7 @@ func TestListPayments(t *testing.T) {
 					},
 				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -505,6 +513,7 @@ func TestListPayments(t *testing.T) {
 					},
 				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -531,9 +540,36 @@ func TestListPayments(t *testing.T) {
 					},
 				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "Internal server error - count",
+			query: Query{
+				// Confirmed: boolPtr(true),
+				// CustomerID: &customerID,
+				PageID:   1,
+				PageSize: 5,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				arg := db.ListPaymentsParams{
+					Confirmed: sql.NullBool{
+						Bool:  false,
+						Valid: false,
+					},
+					CustomerID: sql.NullInt64{
+						Int64: 0,
+						Valid: false,
+					},
+				}
+				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{

@@ -236,7 +236,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/db.Bundle"
+                                "$ref": "#/definitions/db.ListBundlesWithCustomerRow"
                             }
                         }
                     },
@@ -418,6 +418,32 @@ const docTemplate = `{
             }
         },
         "/orders": {
+            "get": {
+                "description": "Get all placed order with details",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Get all orders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db.Order"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
             "put": {
                 "description": "Update an order specifying its end date, bundle mrc, nrc flag",
                 "consumes": [
@@ -853,6 +879,26 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "paid": {
+                    "type": "number"
+                }
+            }
+        },
+        "db.ListBundlesWithCustomerRow": {
+            "type": "object",
+            "properties": {
+                "assigned_customers": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "bundle_id": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "mrc": {
                     "type": "number"
                 }
             }
