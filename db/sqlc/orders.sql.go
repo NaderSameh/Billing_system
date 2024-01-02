@@ -114,6 +114,40 @@ func (q *Queries) ListAllActiveOrders(ctx context.Context) ([]Order, error) {
 	return items, nil
 }
 
+const listAllOrders = `-- name: ListAllOrders :many
+SELECT id, start_date, end_date, batch_id, bundle_id, nrc FROM orders
+`
+
+func (q *Queries) ListAllOrders(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listAllOrders)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Order{}
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.BatchID,
+			&i.BundleID,
+			&i.Nrc,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listOrdersByBatchID = `-- name: ListOrdersByBatchID :many
 SELECT id, start_date, end_date, batch_id, bundle_id, nrc FROM orders
 WHERE batch_id = $1

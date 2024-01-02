@@ -11,6 +11,11 @@ RETURNING *;
 SELECT * FROM orders
 WHERE id = $1 LIMIT 1;
 
+
+
+-- name: ListAllOrders :many
+SELECT * FROM orders;
+
 -- name: ListOrdersByBundleID :many
 SELECT * FROM orders
 WHERE bundle_id = $1

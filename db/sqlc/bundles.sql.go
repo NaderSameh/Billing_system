@@ -59,6 +59,16 @@ func (q *Queries) DeleteBundle(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteOldBundleCustomers = `-- name: DeleteOldBundleCustomers :exec
+DELETE FROM bundles_customers
+WHERE bundles_id = $1
+`
+
+func (q *Queries) DeleteOldBundleCustomers(ctx context.Context, bundlesID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteOldBundleCustomers, bundlesID)
+	return err
+}
+
 const getBundleByID = `-- name: GetBundleByID :one
 SELECT id, mrc, description FROM bundles 
 WHERE id = $1 LIMIT 1
@@ -69,6 +79,24 @@ func (q *Queries) GetBundleByID(ctx context.Context, id int64) (Bundle, error) {
 	var i Bundle
 	err := row.Scan(&i.ID, &i.Mrc, &i.Description)
 	return i, err
+}
+
+const insertNewBundleCustomers = `-- name: InsertNewBundleCustomers :exec
+INSERT INTO bundles_customers (bundles_id, customers_id)
+SELECT
+    $2 AS bundles_id,
+    (data->>'customer_id')::bigint AS customers_id
+FROM json_array_elements($1::json) AS data
+`
+
+type InsertNewBundleCustomersParams struct {
+	Column1   json.RawMessage `json:"column_1"`
+	BundlesID int64           `json:"bundles_id"`
+}
+
+func (q *Queries) InsertNewBundleCustomers(ctx context.Context, arg InsertNewBundleCustomersParams) error {
+	_, err := q.db.ExecContext(ctx, insertNewBundleCustomers, arg.Column1, arg.BundlesID)
+	return err
 }
 
 const listAllBundles = `-- name: ListAllBundles :many

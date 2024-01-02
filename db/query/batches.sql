@@ -28,6 +28,11 @@ LIMIT $1
 OFFSET $2;
 
 
+-- name: ListAllBatchesCount :one
+SELECT COUNT(*) FROM batches
+WHERE (name = sqlc.narg('name') OR sqlc.narg('name') IS NULL)
+AND (customer_id = sqlc.narg('customer_id') OR sqlc.narg('customer_id') IS NULL);
+
 
 -- name: UpdateBatch :one
 UPDATE batches

@@ -120,6 +120,10 @@ type listBatchesRequest struct {
 	PageID       int32  `form:"page_id" binding:"required,min=1"`
 	PageSize     int32  `form:"page_size" binding:"required,min=5,max=10"`
 }
+type listBatchesResponse struct {
+	Batches []db.Batch `json:"batches"`
+	Pages   int32      `json:"pages"`
+}
 
 // ListBatches godoc
 //
@@ -135,13 +139,14 @@ type listBatchesRequest struct {
 //	@Param			page_id			query		int		true	"Page ID"
 //	@Param			page_size		query		int		true	"Page Size"
 //
-//	@Success		200				{array}		db.Batch
+//	@Success		200				{object}		listBatchesResponse
 //	@Failure		400				{object}	error
 //	@Failure		500				{object}	error
 //
 //	@Router			/batches [get]
 func (server *Server) listBatches(c *gin.Context) {
 	var req listBatchesRequest
+	var res listBatchesResponse
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -166,12 +171,26 @@ func (server *Server) listBatches(c *gin.Context) {
 		Limit:      req.PageSize,
 		Offset:     (req.PageID - 1) * req.PageSize,
 	}
-	batches, err := server.store.ListAllBatches(c, arg)
+	res.Batches, err = server.store.ListAllBatches(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	c.JSON(http.StatusOK, batches)
+	arg2 := db.ListAllBatchesCountParams{
+		CustomerID: sql.NullInt64{Valid: customerBool, Int64: customer.ID},
+		Name:       sql.NullString{Valid: false, String: ""},
+	}
+	count, err := server.store.ListAllBatchesCount(c, arg2)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	res.Pages = int32(count) / req.PageSize
+	if int32(count)%req.PageSize != 0 {
+		res.Pages++
+	}
+
+	c.JSON(http.StatusOK, res)
 
 }
 

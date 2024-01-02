@@ -55,6 +55,7 @@ func (server *Server) setupRouter() {
 
 	r.POST("/orders", server.createOrder)
 	r.PUT("/orders/:order_id", server.updateOrder)
+	r.GET("/orders", server.getOrder)
 
 	r.PUT("/payments_logs/:log_id", server.updatePaymentLog)
 	r.DELETE("/payments_logs/:log_id", server.deletePayment)

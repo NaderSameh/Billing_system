@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,8 +48,8 @@ func (server *Server) createBundle(c *gin.Context) {
 }
 
 type assignBundleRequest struct {
-	CustomerName string `json:"customer_name" binding:"required,min=1"`
-	BundleID     int64  `json:"bundle_id" binding:"required,min=1"`
+	AssignedCusomers json.RawMessage `json:"assigned_customers" binding:"required"`
+	BundleID         int64           `json:"bundle_id" binding:"required,min=1"`
 }
 
 // AssignBundle godoc
@@ -71,16 +72,16 @@ func (server *Server) assignBundleToCustomer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	customer, err := server.store.GetCustomerID(c, req.CustomerName)
+	err := server.store.DeleteOldBundleCustomers(c, req.BundleID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	err = server.store.AddBundleToCustomer(c, db.AddBundleToCustomerParams{BundlesID: req.BundleID, CustomersID: customer.ID})
+	arg := db.InsertNewBundleCustomersParams{
+		Column1:   req.AssignedCusomers,
+		BundlesID: req.BundleID,
+	}
+	err = server.store.InsertNewBundleCustomers(c, arg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -133,6 +134,12 @@ func (server *Server) deleteBundle(c *gin.Context) {
 
 type getBundlesRequest struct {
 	CustomerName string `form:"customer_name"`
+}
+
+type getBundleResponse struct {
+	ID          int64   `json:"id"`
+	MRC         float64 `json:"mrc"`
+	Description string  `json:"description"`
 }
 
 // GetBundles godoc

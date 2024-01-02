@@ -183,6 +183,20 @@ func (mr *MockStoreMockRecorder) DeleteBundle(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBundle", reflect.TypeOf((*MockStore)(nil).DeleteBundle), arg0, arg1)
 }
 
+// DeleteOldBundleCustomers mocks base method.
+func (m *MockStore) DeleteOldBundleCustomers(arg0 context.Context, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOldBundleCustomers", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOldBundleCustomers indicates an expected call of DeleteOldBundleCustomers.
+func (mr *MockStoreMockRecorder) DeleteOldBundleCustomers(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOldBundleCustomers", reflect.TypeOf((*MockStore)(nil).DeleteOldBundleCustomers), arg0, arg1)
+}
+
 // DeleteOrder mocks base method.
 func (m *MockStore) DeleteOrder(arg0 context.Context, arg1 int64) error {
 	m.ctrl.T.Helper()
@@ -316,6 +330,20 @@ func (mr *MockStoreMockRecorder) GetPaymentForUpdate(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentForUpdate", reflect.TypeOf((*MockStore)(nil).GetPaymentForUpdate), arg0, arg1)
 }
 
+// InsertNewBundleCustomers mocks base method.
+func (m *MockStore) InsertNewBundleCustomers(arg0 context.Context, arg1 db.InsertNewBundleCustomersParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertNewBundleCustomers", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertNewBundleCustomers indicates an expected call of InsertNewBundleCustomers.
+func (mr *MockStoreMockRecorder) InsertNewBundleCustomers(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertNewBundleCustomers", reflect.TypeOf((*MockStore)(nil).InsertNewBundleCustomers), arg0, arg1)
+}
+
 // ListAllActiveOrders mocks base method.
 func (m *MockStore) ListAllActiveOrders(arg0 context.Context) ([]db.Order, error) {
 	m.ctrl.T.Helper()
@@ -346,6 +374,21 @@ func (mr *MockStoreMockRecorder) ListAllBatches(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllBatches", reflect.TypeOf((*MockStore)(nil).ListAllBatches), arg0, arg1)
 }
 
+// ListAllBatchesCount mocks base method.
+func (m *MockStore) ListAllBatchesCount(arg0 context.Context, arg1 db.ListAllBatchesCountParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllBatchesCount", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllBatchesCount indicates an expected call of ListAllBatchesCount.
+func (mr *MockStoreMockRecorder) ListAllBatchesCount(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllBatchesCount", reflect.TypeOf((*MockStore)(nil).ListAllBatchesCount), arg0, arg1)
+}
+
 // ListAllBundles mocks base method.
 func (m *MockStore) ListAllBundles(arg0 context.Context) ([]db.Bundle, error) {
 	m.ctrl.T.Helper()
@@ -374,6 +417,21 @@ func (m *MockStore) ListAllCharges(arg0 context.Context, arg1 sql.NullString) ([
 func (mr *MockStoreMockRecorder) ListAllCharges(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllCharges", reflect.TypeOf((*MockStore)(nil).ListAllCharges), arg0, arg1)
+}
+
+// ListAllOrders mocks base method.
+func (m *MockStore) ListAllOrders(arg0 context.Context) ([]db.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllOrders", arg0)
+	ret0, _ := ret[0].([]db.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllOrders indicates an expected call of ListAllOrders.
+func (mr *MockStoreMockRecorder) ListAllOrders(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllOrders", reflect.TypeOf((*MockStore)(nil).ListAllOrders), arg0)
 }
 
 // ListBundlesByCustomerID mocks base method.

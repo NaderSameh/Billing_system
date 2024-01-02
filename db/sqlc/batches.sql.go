@@ -154,6 +154,24 @@ func (q *Queries) ListAllBatches(ctx context.Context, arg ListAllBatchesParams) 
 	return items, nil
 }
 
+const listAllBatchesCount = `-- name: ListAllBatchesCount :one
+SELECT COUNT(*) FROM batches
+WHERE (name = $1 OR $1 IS NULL)
+AND (customer_id = $2 OR $2 IS NULL)
+`
+
+type ListAllBatchesCountParams struct {
+	Name       sql.NullString `json:"name"`
+	CustomerID sql.NullInt64  `json:"customer_id"`
+}
+
+func (q *Queries) ListAllBatchesCount(ctx context.Context, arg ListAllBatchesCountParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, listAllBatchesCount, arg.Name, arg.CustomerID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const updateBatch = `-- name: UpdateBatch :one
 UPDATE batches
 SET
