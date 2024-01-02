@@ -140,6 +140,11 @@ type listPaymentLogsQuery struct {
 	PageSize   int32  `form:"page_size" binding:"required,min=5,max=10"`
 }
 
+type listPaymentsResponse struct {
+	Payments []db.PaymentLog `json:"payments"`
+	Pages    int32           `json:"pages"`
+}
+
 // ListPayments godoc
 //
 //	@Summary		List Payments
@@ -159,7 +164,8 @@ type listPaymentLogsQuery struct {
 func (server *Server) listPaymentLogs(c *gin.Context) {
 
 	var req listPaymentLogsQuery
-
+	var res listPaymentsResponse
+	var err error
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -177,14 +183,33 @@ func (server *Server) listPaymentLogs(c *gin.Context) {
 	} else {
 		customer_ID = sql.NullInt64{Int64: 0, Valid: false}
 	}
-
-	payments, err := server.store.ListPayments(c, db.ListPaymentsParams{Confirmed: confirmed, CustomerID: customer_ID})
+	arg := db.ListPaymentsParams{
+		Confirmed:  confirmed,
+		CustomerID: customer_ID,
+		Limit:      req.PageSize,
+		Offset:     (req.PageID - 1) * req.PageSize,
+	}
+	res.Payments, err = server.store.ListPayments(c, arg)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, payments)
+	arg2 := db.ListAllPaymentsCountParams{
+		Confirmed:  confirmed,
+		CustomerID: customer_ID,
+	}
+	count, err := server.store.ListAllPaymentsCount(c, arg2)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	res.Pages = int32(count) / req.PageSize
+	if int32(count)%req.PageSize != 0 {
+		res.Pages++
+	}
+
+	c.JSON(http.StatusOK, res)
 
 }

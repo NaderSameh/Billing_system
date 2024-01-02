@@ -12,7 +12,9 @@ RETURNING *;
 SELECT * FROM payment_logs
 WHERE (confirmed = sqlc.narg('confirmed') OR sqlc.narg('confirmed') IS NULL) AND
 (customer_id = sqlc.narg('customer_id') OR sqlc.narg('customer_id') IS NULL)
-ORDER BY id;
+ORDER BY id
+LIMIT $1
+OFFSET $2;
 
 
 
@@ -20,6 +22,12 @@ ORDER BY id;
 SELECT * FROM payment_logs
 WHERE id = $1 LIMIT 1
 FOR NO KEY UPDATE;
+
+
+-- name: ListAllPaymentsCount :one
+SELECT COUNT(*) FROM payment_logs
+WHERE (confirmed = sqlc.narg('confirmed') OR sqlc.narg('confirmed') IS NULL)
+AND (customer_id = sqlc.narg('customer_id') OR sqlc.narg('customer_id') IS NULL);
 
 
 
