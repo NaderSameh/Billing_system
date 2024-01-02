@@ -77,6 +77,8 @@ func TestListPayments(t *testing.T) {
 	arg := ListPaymentsParams{
 		Confirmed:  sql.NullBool{Bool: true, Valid: false},
 		CustomerID: sql.NullInt64{Int64: rand.Int63(), Valid: false},
+		Limit:      5,
+		Offset:     0,
 	}
 	paymentLogs, err := testQueries.ListPayments(context.Background(), arg)
 	require.NoError(t, err)
