@@ -2,15 +2,16 @@ basePath: /
 definitions:
   api.assignBundleRequest:
     properties:
+      assigned_customers:
+        items:
+          type: integer
+        type: array
       bundle_id:
         minimum: 1
         type: integer
-      customer_name:
-        minLength: 1
-        type: string
     required:
+    - assigned_customers
     - bundle_id
-    - customer_name
     type: object
   api.createBatchRequest:
     properties:
@@ -58,6 +59,15 @@ definitions:
         type: string
     required:
     - batch_name
+    type: object
+  api.listBatchesResponse:
+    properties:
+      batches:
+        items:
+          $ref: '#/definitions/db.Batch'
+        type: array
+      pages:
+        type: integer
     type: object
   api.updateBatchRequestJSON:
     properties:
@@ -233,9 +243,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/db.Batch'
-            type: array
+            $ref: '#/definitions/api.listBatchesResponse'
         "400":
           description: Bad Request
           schema: {}
@@ -575,10 +583,10 @@ paths:
         name: page_size
         required: true
         type: integer
-      - description: customer_id
+      - description: customer_name
         in: query
-        name: customer_id
-        type: integer
+        name: customer_name
+        type: string
       produces:
       - application/json
       responses:

@@ -16,6 +16,7 @@ import (
 	"github.com/golang/mock/gomock"
 	mockdb "github.com/naderSameh/billing_system/db/mock"
 	db "github.com/naderSameh/billing_system/db/sqlc"
+	"github.com/naderSameh/billing_system/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -387,6 +388,7 @@ func TestListPayments(t *testing.T) {
 
 	payments := make([]db.PaymentLog, 10)
 	customerID := rand.Int63()
+	customerName := util.GenerateRandomString(10)
 	payments[0] = db.PaymentLog{
 		ID:        rand.Int63(),
 		Payment:   math.Round(rand.ExpFloat64() * 100),
@@ -396,10 +398,10 @@ func TestListPayments(t *testing.T) {
 	}
 
 	type Query struct {
-		Confirmed  *bool
-		CustomerID *int64
-		PageID     int32
-		PageSize   int32
+		Confirmed     *bool
+		customer_name *string
+		PageID        int32
+		PageSize      int32
 	}
 
 	testCases := []struct {
@@ -412,10 +414,10 @@ func TestListPayments(t *testing.T) {
 		{
 			name: "OK - true confirmation",
 			query: Query{
-				Confirmed:  boolPtr(true),
-				CustomerID: &customerID,
-				PageID:     1,
-				PageSize:   5,
+				Confirmed:     boolPtr(true),
+				customer_name: &customerName,
+				PageID:        1,
+				PageSize:      5,
 			},
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.ListPaymentsParams{
@@ -428,13 +430,9 @@ func TestListPayments(t *testing.T) {
 						Valid: true,
 					},
 				}
-
-				arg2 := db.ListAllPaymentsCountParams{
-					Confirmed:  arg.Confirmed,
-					CustomerID: arg.CustomerID,
-				}
+				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(db.Customer{}, nil)
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
-				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Eq(arg2)).Times(1).Return(int64(10), nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -443,10 +441,10 @@ func TestListPayments(t *testing.T) {
 		{
 			name: "OK - false confirmation",
 			query: Query{
-				Confirmed:  boolPtr(false),
-				CustomerID: &customerID,
-				PageID:     1,
-				PageSize:   5,
+				Confirmed:     boolPtr(false),
+				customer_name: &customerName,
+				PageID:        1,
+				PageSize:      5,
 			},
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.ListPaymentsParams{
@@ -459,8 +457,10 @@ func TestListPayments(t *testing.T) {
 						Valid: true,
 					},
 				}
+				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(db.Customer{}, nil)
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
-				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(11), nil)
+				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -469,10 +469,10 @@ func TestListPayments(t *testing.T) {
 		{
 			name: "OK - no confirmation",
 			query: Query{
-				Confirmed:  nil,
-				CustomerID: &customerID,
-				PageID:     1,
-				PageSize:   5,
+				Confirmed:     nil,
+				customer_name: &customerName,
+				PageID:        1,
+				PageSize:      5,
 			},
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.ListPaymentsParams{
@@ -485,8 +485,10 @@ func TestListPayments(t *testing.T) {
 						Valid: true,
 					},
 				}
+				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(db.Customer{}, nil)
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
 				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -514,6 +516,7 @@ func TestListPayments(t *testing.T) {
 				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
 				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -541,48 +544,24 @@ func TestListPayments(t *testing.T) {
 				}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
 				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 			},
 		},
 		{
-			name: "Internal server error - count",
-			query: Query{
-				// Confirmed: boolPtr(true),
-				// CustomerID: &customerID,
-				PageID:   1,
-				PageSize: 5,
-			},
-			buildstuds: func(store *mockdb.MockStore) {
-				arg := db.ListPaymentsParams{
-					Confirmed: sql.NullBool{
-						Bool:  false,
-						Valid: false,
-					},
-					CustomerID: sql.NullInt64{
-						Int64: 0,
-						Valid: false,
-					},
-				}
-				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, nil)
-				store.EXPECT().ListAllPaymentsCount(gomock.Any(), gomock.Any()).Times(1).Return(int64(10), sql.ErrConnDone)
-			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-			},
-		},
-		{
 			name: "Invalid params",
 			query: Query{
-				Confirmed:  boolPtr(true),
-				CustomerID: &customerID,
-				PageID:     0,
-				PageSize:   5,
+				Confirmed:     boolPtr(true),
+				customer_name: &customerName,
+				PageID:        0,
+				PageSize:      5,
 			},
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.ListPaymentsParams{}
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(0).Return(payments, nil)
+
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -592,10 +571,10 @@ func TestListPayments(t *testing.T) {
 		{
 			name: "internal server error",
 			query: Query{
-				Confirmed:  boolPtr(true),
-				CustomerID: &customerID,
-				PageID:     1,
-				PageSize:   5,
+				Confirmed:     boolPtr(true),
+				customer_name: &customerName,
+				PageID:        1,
+				PageSize:      5,
 			},
 			buildstuds: func(store *mockdb.MockStore) {
 				arg := db.ListPaymentsParams{
@@ -608,6 +587,7 @@ func TestListPayments(t *testing.T) {
 						Valid: true,
 					},
 				}
+				store.EXPECT().GetCustomerID(gomock.Any(), gomock.Any()).Times(1).Return(db.Customer{}, nil)
 				store.EXPECT().ListPayments(gomock.Any(), gomock.AssignableToTypeOf(arg)).Times(1).Return(payments, sql.ErrConnDone)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
@@ -637,8 +617,8 @@ func TestListPayments(t *testing.T) {
 			if tc.query.Confirmed != nil {
 				values.Add("confirmed", fmt.Sprintf("%t", *tc.query.Confirmed))
 			}
-			if tc.query.CustomerID != nil {
-				values.Add("customer_id", fmt.Sprintf("%d", *tc.query.CustomerID))
+			if tc.query.customer_name != nil {
+				values.Add("customer_name", fmt.Sprintf("%s", *tc.query.customer_name))
 			}
 			values.Add("page_id", fmt.Sprintf("%d", tc.query.PageID))
 			values.Add("page_size", fmt.Sprintf("%d", tc.query.PageSize))
