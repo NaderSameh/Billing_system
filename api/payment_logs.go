@@ -134,10 +134,10 @@ func (server *Server) deletePayment(c *gin.Context) {
 }
 
 type listPaymentLogsQuery struct {
-	Confirmed  *bool  `form:"confirmed"`
-	CustomerID *int64 `form:"customer_id"`
-	PageID     int32  `form:"page_id" binding:"required,min=1"`
-	PageSize   int32  `form:"page_size" binding:"required,min=5,max=10"`
+	Confirmed    *bool   `form:"confirmed"`
+	CustomerName *string `form:"customer_name"`
+	PageID       int32   `form:"page_id" binding:"required,min=1"`
+	PageSize     int32   `form:"page_size" binding:"required,min=5,max=10"`
 }
 
 type listPaymentsResponse struct {
@@ -155,7 +155,7 @@ type listPaymentsResponse struct {
 //	@Produce		json
 //	@Param			page_id		query		int	true	"Page ID"
 //	@Param			page_size	query		int	true	"Page Size"
-//	@Param			customer_id	query		int	false	"customer_id"
+//	@Param			customer_name	query		string	false	"customer_name"
 //	@Success		200			{array}		db.PaymentLog
 //	@Failure		400			{object}	error
 //	@Failure		404			{object}	error
@@ -178,8 +178,9 @@ func (server *Server) listPaymentLogs(c *gin.Context) {
 	}
 
 	var customer_ID sql.NullInt64
-	if req.CustomerID != nil {
-		customer_ID = sql.NullInt64{Int64: *req.CustomerID, Valid: true}
+	if req.CustomerName != nil {
+		customer, _ := server.store.GetCustomerID(c, *req.CustomerName)
+		customer_ID = sql.NullInt64{Int64: customer.ID, Valid: true}
 	} else {
 		customer_ID = sql.NullInt64{Int64: 0, Valid: false}
 	}

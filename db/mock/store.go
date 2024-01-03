@@ -300,6 +300,21 @@ func (mr *MockStoreMockRecorder) GetCustomerID(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerID", reflect.TypeOf((*MockStore)(nil).GetCustomerID), arg0, arg1)
 }
 
+// GetCustomerbyID mocks base method.
+func (m *MockStore) GetCustomerbyID(arg0 context.Context, arg1 int64) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerbyID", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerbyID indicates an expected call of GetCustomerbyID.
+func (mr *MockStoreMockRecorder) GetCustomerbyID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerbyID", reflect.TypeOf((*MockStore)(nil).GetCustomerbyID), arg0, arg1)
+}
+
 // GetOrderByID mocks base method.
 func (m *MockStore) GetOrderByID(arg0 context.Context, arg1 int64) (db.Order, error) {
 	m.ctrl.T.Helper()

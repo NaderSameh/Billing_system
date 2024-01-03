@@ -12,6 +12,11 @@ SELECT * FROM customers
 WHERE customer = $1 LIMIT 1;
 
 
+-- name: GetCustomerbyID :one
+SELECT * FROM customers
+WHERE id = $1 LIMIT 1;
+
+
 
 -- name: GetAllCustomers :many
 SELECT * FROM customers;

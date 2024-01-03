@@ -129,6 +129,23 @@ func (q *Queries) GetCustomerID(ctx context.Context, customer string) (Customer,
 	return i, err
 }
 
+const getCustomerbyID = `-- name: GetCustomerbyID :one
+SELECT id, customer, paid, due FROM customers
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetCustomerbyID(ctx context.Context, id int64) (Customer, error) {
+	row := q.db.QueryRowContext(ctx, getCustomerbyID, id)
+	var i Customer
+	err := row.Scan(
+		&i.ID,
+		&i.Customer,
+		&i.Paid,
+		&i.Due,
+	)
+	return i, err
+}
+
 const listAllCharges = `-- name: ListAllCharges :many
 SELECT id, customer, paid, due FROM customers
 WHERE (customer = $1 OR $1 IS NULL)

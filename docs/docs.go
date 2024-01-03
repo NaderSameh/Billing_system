@@ -60,10 +60,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/db.Batch"
-                            }
+                            "$ref": "#/definitions/api.listBatchesResponse"
                         }
                     },
                     "400": {
@@ -562,9 +559,9 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "customer_id",
-                        "name": "customer_id",
+                        "type": "string",
+                        "description": "customer_name",
+                        "name": "customer_name",
                         "in": "query"
                     }
                 ],
@@ -690,17 +687,19 @@ const docTemplate = `{
         "api.assignBundleRequest": {
             "type": "object",
             "required": [
-                "bundle_id",
-                "customer_name"
+                "assigned_customers",
+                "bundle_id"
             ],
             "properties": {
+                "assigned_customers": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "bundle_id": {
                     "type": "integer",
                     "minimum": 1
-                },
-                "customer_name": {
-                    "type": "string",
-                    "minLength": 1
                 }
             }
         },
@@ -767,6 +766,20 @@ const docTemplate = `{
                 "batch_name": {
                     "type": "string",
                     "minLength": 1
+                }
+            }
+        },
+        "api.listBatchesResponse": {
+            "type": "object",
+            "properties": {
+                "batches": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/db.Batch"
+                    }
+                },
+                "pages": {
+                    "type": "integer"
                 }
             }
         },
