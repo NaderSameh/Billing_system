@@ -441,6 +441,48 @@ const docTemplate = `{
                     }
                 }
             },
+            "post": {
+                "description": "Create a new order specifying its batch name, it will create with no NRC, default MRC for 1 year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Create new Order",
+                "parameters": [
+                    {
+                        "description": "Create Order body",
+                        "name": "arg",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.createOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/db.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/orders/{order_id}": {
             "put": {
                 "description": "Update an order specifying its end date, bundle mrc, nrc flag",
                 "consumes": [
@@ -484,46 +526,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {}
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {}
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new order specifying its batch name, it will create with no NRC, default MRC for 1 year",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "orders"
-                ],
-                "summary": "Create new Order",
-                "parameters": [
-                    {
-                        "description": "Create Order body",
-                        "name": "arg",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api.createOrderRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/db.Order"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {}
                     },
                     "500": {

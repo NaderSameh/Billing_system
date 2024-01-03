@@ -533,6 +533,7 @@ paths:
       summary: Create new Order
       tags:
       - orders
+  /orders/{order_id}:
     put:
       consumes:
       - application/json

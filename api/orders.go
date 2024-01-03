@@ -144,7 +144,7 @@ type updateOrderRequestPATH struct {
 //	@Failure		400			{object}	error
 //	@Failure		404			{object}	error
 //	@Failure		500			{object}	error
-//	@Router			/orders [put]
+//	@Router			/orders/{order_id} [put]
 func (server *Server) updateOrder(c *gin.Context) {
 	var req updateOrderRequestJSON
 	var reqPath updateOrderRequestPATH
@@ -191,10 +191,11 @@ func (server *Server) updateOrder(c *gin.Context) {
 	}
 
 	arg2 := db.CreatePaymentParams{
-		Confirmed: false,
-		OrderID:   order.ID,
-		DueDate:   time.Now().AddDate(0, 1, 0),
-		Payment:   bundle.Mrc * float64(batch.NoOfDevices),
+		Confirmed:  false,
+		OrderID:    order.ID,
+		DueDate:    time.Now().AddDate(0, 1, 0),
+		Payment:    bundle.Mrc * float64(batch.NoOfDevices),
+		CustomerID: batch.CustomerID,
 	}
 
 	_, err = server.store.CreatePayment(c, arg2)
@@ -210,10 +211,11 @@ func (server *Server) updateOrder(c *gin.Context) {
 	}
 	if req.Nrc.Valid == true {
 		arg2 := db.CreatePaymentParams{
-			Confirmed: false,
-			OrderID:   order.ID,
-			DueDate:   time.Now().AddDate(0, 1, 0),
-			Payment:   req.Nrc.Float64,
+			Confirmed:  false,
+			OrderID:    order.ID,
+			DueDate:    time.Now().AddDate(0, 1, 0),
+			Payment:    req.Nrc.Float64,
+			CustomerID: batch.CustomerID,
 		}
 		_, err = server.store.CreatePayment(c, arg2)
 		if err != nil {
