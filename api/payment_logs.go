@@ -153,13 +153,13 @@ type listPaymentsResponse struct {
 //
 //
 //	@Produce		json
-//	@Param			page_id		query		int	true	"Page ID"
-//	@Param			page_size	query		int	true	"Page Size"
+//	@Param			page_id			query		int		true	"Page ID"
+//	@Param			page_size		query		int		true	"Page Size"
 //	@Param			customer_name	query		string	false	"customer_name"
-//	@Success		200			{array}		db.PaymentLog
-//	@Failure		400			{object}	error
-//	@Failure		404			{object}	error
-//	@Failure		500			{object}	error
+//	@Success		200				{array}		db.PaymentLog
+//	@Failure		400				{object}	error
+//	@Failure		404				{object}	error
+//	@Failure		500				{object}	error
 //	@Router			/payments_logs [get]
 func (server *Server) listPaymentLogs(c *gin.Context) {
 
