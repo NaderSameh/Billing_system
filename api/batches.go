@@ -159,6 +159,7 @@ func (server *Server) listBatches(c *gin.Context) {
 	if req.BatchName != "" {
 		batch, err := server.store.GetBatchByName(c, req.BatchName)
 		res.Batches = append(res.Batches, batch)
+		res.Pages = 1
 		if err != nil {
 			if err == sql.ErrNoRows {
 				c.JSON(http.StatusNotFound, errorResponse(err))
