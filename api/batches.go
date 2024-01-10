@@ -117,6 +117,7 @@ func (server *Server) deleteBatch(c *gin.Context) {
 
 type listBatchesRequest struct {
 	CustomerName string `form:"customer_name"`
+	BatchName    string `form:"batch_name"`
 	PageID       int32  `form:"page_id" binding:"required,min=1"`
 	PageSize     int32  `form:"page_size" binding:"required,min=5,max=10"`
 }
@@ -136,6 +137,7 @@ type listBatchesResponse struct {
 //
 //	@Produce		json
 //	@Param			customer_name	query		string	false	"Filter: customer name"
+//	@Param			batch_name		query		string	false	"Filter: batch name"
 //	@Param			page_id			query		int		true	"Page ID"
 //	@Param			page_size		query		int		true	"Page Size"
 //
@@ -154,6 +156,21 @@ func (server *Server) listBatches(c *gin.Context) {
 	var customerBool bool
 	var customer db.Customer
 	var err error
+	if req.BatchName != "" {
+		batch, err := server.store.GetBatchByName(c, req.BatchName)
+		res.Batches = append(res.Batches, batch)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			c.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		c.JSON(http.StatusOK, res)
+		return
+	}
+
 	if req.CustomerName != "" {
 		customer, err = server.store.GetCustomerID(c, req.CustomerName)
 		if err != nil {

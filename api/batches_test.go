@@ -350,6 +350,7 @@ func TestListBatches(t *testing.T) {
 	}
 	type Query struct {
 		CustomerName string
+		BatchName    string
 		page_id      int32
 		page_size    int32
 	}
@@ -380,6 +381,50 @@ func TestListBatches(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+
+		{
+			name: "OK - batch name",
+			query: Query{
+				BatchName: "random",
+				page_id:   1,
+				page_size: 5,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Any()).Times(1).Return(batches[0], nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "Internalerror - batch name",
+			query: Query{
+				BatchName: "random",
+				page_id:   1,
+				page_size: 5,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Any()).Times(1).Return(batches[0], sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+
+		{
+			name: "Notfound - batch name",
+			query: Query{
+				BatchName: "random",
+				page_id:   1,
+				page_size: 5,
+			},
+			buildstuds: func(store *mockdb.MockStore) {
+				store.EXPECT().GetBatchByName(gomock.Any(), gomock.Any()).Times(1).Return(batches[0], sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
 
@@ -507,7 +552,12 @@ func TestListBatches(t *testing.T) {
 
 			// Add query parameters to request URL
 			q := request.URL.Query()
-			q.Add("customer_name", fmt.Sprintf("%s", tc.query.CustomerName))
+			if tc.query.CustomerName != "" {
+				q.Add("customer_name", fmt.Sprintf("%s", tc.query.CustomerName))
+			}
+			if tc.query.BatchName != "" {
+				q.Add("batch_name", fmt.Sprintf("%s", tc.query.BatchName))
+			}
 			q.Add("page_id", fmt.Sprintf("%d", tc.query.page_id))
 			q.Add("page_size", fmt.Sprintf("%d", tc.query.page_size))
 			request.URL.RawQuery = q.Encode()

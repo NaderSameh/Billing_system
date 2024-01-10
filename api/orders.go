@@ -243,9 +243,9 @@ func (server *Server) updateOrder(c *gin.Context) {
 //	@Tags			orders
 //	@Produce		json
 //
-//	@Success		200			{object}	db.Order
-//	@Failure		404			{object}	error
-//	@Failure		500			{object}	error
+//	@Success		200	{object}	db.Order
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
 //	@Router			/orders [get]
 func (server *Server) getOrder(c *gin.Context) {
 
