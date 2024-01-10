@@ -42,6 +42,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Filter: batch name",
+                        "name": "batch_name",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Page ID",
                         "name": "page_id",
