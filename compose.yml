@@ -1,5 +1,6 @@
 services:
   api:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,10 +22,12 @@ services:
     entrypoint: [ "/app/start.sh" ]
     command: [ "/app/main" ]
   redis:
+    restart: always
     image: redis:7-alpine
     networks:
       - billing_app
   postgres:
+    restart: always
     image: postgres:alpine3.18
     environment:
       - POSTGRES_USER=nader
@@ -41,6 +44,7 @@ services:
       - billing_app
 
   grafana:
+    restart: always
     image: grafana/grafana:latest
     ports:
       - 3000:3000
@@ -59,6 +63,7 @@ services:
       - billing_app
 
   loki:
+    restart: always
     image: grafana/loki:latest
     ports:
       - 3100:3100
@@ -67,6 +72,7 @@ services:
       - billing_app
 
   promtail:
+    restart: always
     image: grafana/promtail:latest
     volumes:
       - ./config/promtail.yaml:/etc/promtail/docker-config.yaml
@@ -78,6 +84,7 @@ services:
     networks:
       - billing_app
   prometheus:
+    restart: always
     image: prom/prometheus
     volumes:
       - "./config/prometheus.yml:/etc/prometheus/prometheus.yml"
