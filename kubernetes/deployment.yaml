@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: billing-api
-        image: nadersameh8/billing:6b8925b00fc418a159cbb497512b683642cc3158
+        image: nadersameh8/billing:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
