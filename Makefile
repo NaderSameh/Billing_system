@@ -1,5 +1,5 @@
 postgres:
-	docker run --name postgres88 -p 5432:5432 -e POSTGRES_USER=nader -e POSTGRES_PASSWORD=nader123 -e POSTGRES_DB=billing_system -d postgres:latest
+	docker run --name postgres -p 5432:5432 -e POSTGRES_USER=nader -e POSTGRES_PASSWORD=nader123 -e POSTGRES_DB=billing_system -d postgres:latest
 
 migrateup:
 	migrate -path db/migrations -database "postgresql://nader:nader123@localhost:5432/billing_system?sslmode=disable" -verbose up

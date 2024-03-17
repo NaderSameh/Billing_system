@@ -5,7 +5,7 @@ metadata:
   labels:
     app: billing-api
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: billing-api
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: billing-api
-        image: nadersameh8/billing:latest
+        image: nadersameh8/billing:6b8925b00fc418a159cbb497512b683642cc3158
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
