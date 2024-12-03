@@ -161,7 +161,7 @@ func (server *Server) getBundles(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	var bundles []db.Bundle
+	var bundles []db.ListBundlesByCustomerIDRow
 	if req.CustomerName != "" {
 		customer, err := server.store.GetCustomerID(c, req.CustomerName)
 		if err != nil {

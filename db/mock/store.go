@@ -465,10 +465,10 @@ func (mr *MockStoreMockRecorder) ListAllPaymentsCount(arg0, arg1 interface{}) *g
 }
 
 // ListBundlesByCustomerID mocks base method.
-func (m *MockStore) ListBundlesByCustomerID(arg0 context.Context, arg1 int64) ([]db.Bundle, error) {
+func (m *MockStore) ListBundlesByCustomerID(arg0 context.Context, arg1 int64) ([]db.ListBundlesByCustomerIDRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListBundlesByCustomerID", arg0, arg1)
-	ret0, _ := ret[0].([]db.Bundle)
+	ret0, _ := ret[0].([]db.ListBundlesByCustomerIDRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
