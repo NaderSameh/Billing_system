@@ -1,13 +1,13 @@
 -- name: CreateBundle :one
 INSERT INTO bundles (
-  mrc, description
+  mrc, description, currency
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 )
 RETURNING *;
 
 -- name: ListBundlesByCustomerID :many
-SELECT bundles.id, bundles.mrc, bundles.description
+SELECT bundles.id, bundles.mrc, bundles.description, bundles.currency
 FROM bundles
 JOIN bundles_customers ON bundles.id = bundles_customers.bundles_id
 WHERE bundles_customers.customers_id = $1
@@ -26,7 +26,7 @@ WITH BundleCustomers AS (
   JOIN customers c ON c.id = bc.customers_id
   GROUP BY bc.bundles_id
 )
-SELECT b.id AS bundle_id, b.mrc, b.description, COALESCE(bc.assigned_customers, '[]'::json)
+SELECT b.id AS bundle_id, b.mrc, b.description, b.currency, COALESCE(bc.assigned_customers, '[]'::json)
 FROM bundles b
 LEFT JOIN BundleCustomers bc ON b.id = bc.bundles_id;
 
@@ -62,3 +62,12 @@ INSERT INTO bundles_customers (
 DELETE FROM bundles
 WHERE id = $1;
 
+
+-- name: UpdateBundle :one
+UPDATE bundles
+SET
+mrc = $2,
+description = $3,
+currency = $4
+WHERE id = $1
+RETURNING *;

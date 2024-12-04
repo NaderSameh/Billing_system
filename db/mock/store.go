@@ -465,10 +465,10 @@ func (mr *MockStoreMockRecorder) ListAllPaymentsCount(arg0, arg1 interface{}) *g
 }
 
 // ListBundlesByCustomerID mocks base method.
-func (m *MockStore) ListBundlesByCustomerID(arg0 context.Context, arg1 int64) ([]db.ListBundlesByCustomerIDRow, error) {
+func (m *MockStore) ListBundlesByCustomerID(arg0 context.Context, arg1 int64) ([]db.Bundle, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListBundlesByCustomerID", arg0, arg1)
-	ret0, _ := ret[0].([]db.ListBundlesByCustomerIDRow)
+	ret0, _ := ret[0].([]db.Bundle)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -552,6 +552,21 @@ func (m *MockStore) UpdateBatch(arg0 context.Context, arg1 db.UpdateBatchParams)
 func (mr *MockStoreMockRecorder) UpdateBatch(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBatch", reflect.TypeOf((*MockStore)(nil).UpdateBatch), arg0, arg1)
+}
+
+// UpdateBundle mocks base method.
+func (m *MockStore) UpdateBundle(arg0 context.Context, arg1 db.UpdateBundleParams) (db.Bundle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBundle", arg0, arg1)
+	ret0, _ := ret[0].(db.Bundle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateBundle indicates an expected call of UpdateBundle.
+func (mr *MockStoreMockRecorder) UpdateBundle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBundle", reflect.TypeOf((*MockStore)(nil).UpdateBundle), arg0, arg1)
 }
 
 // UpdateOrders mocks base method.

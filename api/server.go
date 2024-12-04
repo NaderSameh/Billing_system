@@ -52,6 +52,7 @@ func (server *Server) setupRouter() {
 	r.POST("/bundles/assign", server.assignBundleToCustomer)
 	r.GET("/bundles", server.getBundles)
 	r.DELETE("/bundles/:bundle_id", server.deleteBundle)
+	r.PUT("/bundles/:bundle_id", server.editBundle)
 
 	r.POST("/orders", server.createOrder)
 	r.PUT("/orders/:order_id", server.updateOrder)

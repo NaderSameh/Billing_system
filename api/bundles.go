@@ -12,6 +12,7 @@ import (
 type createBundleRequest struct {
 	MRC         float64 `json:"mrc" binding:"required,min=1"`
 	Description string  `json:"description" binding:"required"`
+	Currency    string  `json:"currency" binding:"required"`
 }
 
 // CreateBundle godoc
@@ -37,6 +38,7 @@ func (server *Server) createBundle(c *gin.Context) {
 	arg := db.CreateBundleParams{
 		Mrc:         req.MRC,
 		Description: req.Description,
+		Currency:    req.Currency,
 	}
 	category, err := server.store.CreateBundle(c, arg)
 	if err != nil {
@@ -45,6 +47,67 @@ func (server *Server) createBundle(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, category)
 
+}
+
+type editBundleRequest struct {
+	Mrc         float64 `json:"mrc"`
+	Description string  `json:"description"`
+	Currency    string  `json:"currency"`
+}
+type editBundleURI struct {
+	BundleID int64 `uri:"bundle_id" binding:"required,min=1"`
+}
+
+// EditBundle godoc
+//
+//	@Summary		Edit a Bundle
+//	@Description	Edit a Bundle using it's id
+//	@Tags			bundles
+//	@Produce		json
+//	@Accept			json
+//	@Param			arg	body		editBundleRequest	true	"Edit bundle body"
+//	@Param			bundle_id	path		int	true	"Bundle ID"
+//
+//	@Success		200	{object}	db.Bundle
+//	@Failure		400	{object}	error
+//	@Failure		500	{object}	error
+//	@Router			/bundles/{bundle_id} [put]
+func (server *Server) editBundle(c *gin.Context) {
+	var idReq editBundleURI
+	if err := c.ShouldBindUri(&idReq); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	bundle, err := server.store.GetBundleByID(c, idReq.BundleID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	var editReq editBundleRequest
+	if err := c.ShouldBindJSON(&editReq); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	arg := db.UpdateBundleParams(bundle)
+	if editReq.Currency != "" && editReq.Currency != bundle.Currency {
+		arg.Currency = editReq.Currency
+	}
+	if editReq.Description != "" && editReq.Description != bundle.Description {
+		arg.Description = editReq.Description
+	}
+	if editReq.Mrc != bundle.Mrc {
+		arg.Mrc = editReq.Mrc
+	}
+	updatedBundle, err := server.store.UpdateBundle(c, arg)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	c.JSON(http.StatusOK, updatedBundle)
 }
 
 type assignBundleRequest struct {
@@ -136,12 +199,6 @@ type getBundlesRequest struct {
 	CustomerName string `form:"customer_name"`
 }
 
-type getBundleResponse struct {
-	ID          int64   `json:"id"`
-	MRC         float64 `json:"mrc"`
-	Description string  `json:"description"`
-}
-
 // GetBundles godoc
 //
 //	@Summary		Get Bundles
@@ -161,7 +218,7 @@ func (server *Server) getBundles(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	var bundles []db.ListBundlesByCustomerIDRow
+	var bundles []db.Bundle
 	if req.CustomerName != "" {
 		customer, err := server.store.GetCustomerID(c, req.CustomerName)
 		if err != nil {

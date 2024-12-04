@@ -30,9 +30,9 @@ func (q *Queries) AddBundleToCustomer(ctx context.Context, arg AddBundleToCustom
 
 const createBundle = `-- name: CreateBundle :one
 INSERT INTO bundles (
-  mrc, description
+  mrc, description, currency
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 )
 RETURNING id, mrc, description, currency
 `
@@ -40,10 +40,11 @@ RETURNING id, mrc, description, currency
 type CreateBundleParams struct {
 	Mrc         float64 `json:"mrc"`
 	Description string  `json:"description"`
+	Currency    string  `json:"currency"`
 }
 
 func (q *Queries) CreateBundle(ctx context.Context, arg CreateBundleParams) (Bundle, error) {
-	row := q.db.QueryRowContext(ctx, createBundle, arg.Mrc, arg.Description)
+	row := q.db.QueryRowContext(ctx, createBundle, arg.Mrc, arg.Description, arg.Currency)
 	var i Bundle
 	err := row.Scan(
 		&i.ID,
@@ -143,29 +144,28 @@ func (q *Queries) ListAllBundles(ctx context.Context) ([]Bundle, error) {
 }
 
 const listBundlesByCustomerID = `-- name: ListBundlesByCustomerID :many
-SELECT bundles.id, bundles.mrc, bundles.description
+SELECT bundles.id, bundles.mrc, bundles.description, bundles.currency
 FROM bundles
 JOIN bundles_customers ON bundles.id = bundles_customers.bundles_id
 WHERE bundles_customers.customers_id = $1
 ORDER BY bundles_customers.customers_id
 `
 
-type ListBundlesByCustomerIDRow struct {
-	ID          int64   `json:"id"`
-	Mrc         float64 `json:"mrc"`
-	Description string  `json:"description"`
-}
-
-func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64) ([]ListBundlesByCustomerIDRow, error) {
+func (q *Queries) ListBundlesByCustomerID(ctx context.Context, customersID int64) ([]Bundle, error) {
 	rows, err := q.db.QueryContext(ctx, listBundlesByCustomerID, customersID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListBundlesByCustomerIDRow{}
+	items := []Bundle{}
 	for rows.Next() {
-		var i ListBundlesByCustomerIDRow
-		if err := rows.Scan(&i.ID, &i.Mrc, &i.Description); err != nil {
+		var i Bundle
+		if err := rows.Scan(
+			&i.ID,
+			&i.Mrc,
+			&i.Description,
+			&i.Currency,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -186,7 +186,7 @@ WITH BundleCustomers AS (
   JOIN customers c ON c.id = bc.customers_id
   GROUP BY bc.bundles_id
 )
-SELECT b.id AS bundle_id, b.mrc, b.description, COALESCE(bc.assigned_customers, '[]'::json)
+SELECT b.id AS bundle_id, b.mrc, b.description, b.currency, COALESCE(bc.assigned_customers, '[]'::json)
 FROM bundles b
 LEFT JOIN BundleCustomers bc ON b.id = bc.bundles_id
 `
@@ -195,6 +195,7 @@ type ListBundlesWithCustomerRow struct {
 	BundleID          int64           `json:"bundle_id"`
 	Mrc               float64         `json:"mrc"`
 	Description       string          `json:"description"`
+	Currency          string          `json:"currency"`
 	AssignedCustomers json.RawMessage `json:"assigned_customers"`
 }
 
@@ -211,6 +212,7 @@ func (q *Queries) ListBundlesWithCustomer(ctx context.Context) ([]ListBundlesWit
 			&i.BundleID,
 			&i.Mrc,
 			&i.Description,
+			&i.Currency,
 			&i.AssignedCustomers,
 		); err != nil {
 			return nil, err
@@ -224,4 +226,38 @@ func (q *Queries) ListBundlesWithCustomer(ctx context.Context) ([]ListBundlesWit
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBundle = `-- name: UpdateBundle :one
+UPDATE bundles
+SET
+mrc = $2,
+description = $3,
+currency = $4
+WHERE id = $1
+RETURNING id, mrc, description, currency
+`
+
+type UpdateBundleParams struct {
+	ID          int64   `json:"id"`
+	Mrc         float64 `json:"mrc"`
+	Description string  `json:"description"`
+	Currency    string  `json:"currency"`
+}
+
+func (q *Queries) UpdateBundle(ctx context.Context, arg UpdateBundleParams) (Bundle, error) {
+	row := q.db.QueryRowContext(ctx, updateBundle,
+		arg.ID,
+		arg.Mrc,
+		arg.Description,
+		arg.Currency,
+	)
+	var i Bundle
+	err := row.Scan(
+		&i.ID,
+		&i.Mrc,
+		&i.Description,
+		&i.Currency,
+	)
+	return i, err
 }
